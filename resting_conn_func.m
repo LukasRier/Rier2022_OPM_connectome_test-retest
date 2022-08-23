@@ -1,6 +1,4 @@
-%% Data Cleaning Test
-
-function data_cleaning_test(sub,ses)
+function resting_conn_func(sub,ses)
 restoredefaultpath
 cleaning_only = 0;
 close all
