@@ -1,10 +1,5 @@
-MATTBeamformer.zip
 fieldtrip-20190212/*
-MATTBeamformer/*
 *asv
 *.asv
 *.m~
-noise_issue_fix.m
-noise_issue.m
-noise_issue_2.m
 old_scripts/*
