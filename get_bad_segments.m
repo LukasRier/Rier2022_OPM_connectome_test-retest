@@ -10,7 +10,7 @@ bad_trials = find(bad_trials_vec > 1);
 artifacts = [];
 trl_samps = size(data_mat,2);
 for ind = 1:length(bad_trials)
-    artifacts(ind,1) = 1000+(bad_trials(ind)-1).*trl_samps,
+    artifacts(ind,1) = 1000+(bad_trials(ind)-1).*trl_samps;
 end
 artifacts = [artifacts,artifacts+trl_samps-2000];
 end
