@@ -1,13 +1,24 @@
 function [ch_table_new] = Bad_Channels(data_f,ch_table,fs,hp,lp)
-%Plots channels and provides ui to remove bad channels 
+% [ch_table_new] = Bad_Channels(data_f,ch_table,fs,hp,lp)
+%% Plots channels and provides ui to remove bad channels 
+% 
 % data_f... nsamps x nchans matrix
-
+% 
 % time...time vector
-
+% 
 % ch_table...table containing columns name, status, with channel names and
 % good/bad status
+% 
+% hp/lp...filter cut off values for band pass filter
+% ________________________________________________________________________
+% Inspect channel traces and find bad channels (best in conjunction with
+% plots of the channel spectra).
+% Un-tick bad channels, click "Update" to set them to "bad" and click
+% "Remove bad channels" when done to output an updated table containing all
+% channel information.
 
-% hp/lp...filter cut off values for band pass filter 
+
+
 if size(data_f,2) > size(data_f,1)
     error("Make sure the data matrix is in (N_sample x N_channel) form!")
 end
