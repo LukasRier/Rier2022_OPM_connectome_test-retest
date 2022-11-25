@@ -5,17 +5,28 @@ clc
 project_dir = 'R:\OPMMEG\Projects\movie\';
 project_dir = '/net/cador/data_local/Lukas/movie/';
 
-results_dir = [project_dir,'results',filesep];
+results_dir = [project_dir,'results',filesep,'connectome_fingerprints',filesep];
+mkdir(results_dir);
 datadir = [project_dir,'data',filesep];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-hpfs = [4,8,13,30,50];
-lpfs = [8,12,30,50,100];
+
 hpfs = [4,8, 13,30,50, 30,35,40,52,55,60,65,70,75,80,85,90, 95,102,108];
 lpfs = [8,12,30,50,100,40,45,48,60,65,70,75,80,85,90,95,100,98,110,112];
+hpfs = [4, 8,13,30,35,40];
+lpfs = [8,12,30,40,45,48];
 
-for f_ind = 1:20
+if length(hpfs) ~= length(lpfs);error("Freq bands don't match");end
+if ~all((hpfs-lpfs)<0);error("Not all hipass smaller than lowpass");end
+frq_cols = [237,248,177
+199,233,180
+127,205,187
+65,182,196
+29,145,192
+34,94,168]./256;frq_cols = flipdim(frq_cols,1);
+resf = fopen()
+for f_ind = 1:length(hpfs)
 close all
-clearvars -except project_dir results_dir datadir hpfs lpfs f_ind pval all_real_diffs all_mean_within_corrs
+clearvars -except project_dir results_dir datadir hpfs lpfs f_ind frq_cols pval all_real_diffs all_mean_within_corrs
 
 
 hp = hpfs(f_ind);
@@ -71,7 +82,7 @@ subplot(224)
 go_netviewer_Matt(mean_AEC_b2,0.6)
 
 drawnow
-saveas(gcf,sprintf('%sMean_AEC_%d_%d_Hz.png',results_dir,hp,lp));
+% saveas(gcf,sprintf('%sMean_AEC_%d_%d_Hz.png',results_dir,hp,lp));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 region = 16;
@@ -88,7 +99,7 @@ subplot(212)
 go_netviewer_Matt(masked_c2,0.7)
 view([-48 48])
 drawnow
-saveas(gcf,sprintf('%sWith_reg_%d_AEC_%d_%d_Hz.png',results_dir,region,hp,lp));
+% saveas(gcf,sprintf('%sWith_reg_%d_AEC_%d_%d_Hz.png',results_dir,region,hp,lp));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -267,7 +278,7 @@ set(gcf,'position',[10,10,500,400])
 allwithin = diag(sub_correl);
 all_mean_within_corrs(f_ind) = mean(allwithin);
 all_between = [S1_bet S2_bet S3_bet S4_bet S5_bet S6_bet S7_bet S8_bet];
-bar([1:2],[mean(allwithin) mean(all_between)]);
+bar([1:2],[mean(allwithin) mean(all_between)],'FaceColor',frq_cols(f_ind,:));
 hold on
 plot(1*ones(size(allwithin))+0.5*(rand(size(allwithin))-0.5),allwithin,'r+','linewidth',4)
 plot(2*ones(size(all_between))+0.5*(rand(size(all_between))-0.5),all_between,'k.','linewidth',1)
@@ -324,23 +335,23 @@ set([ax1,ax2],'FontSize',8,'TickLength',[0,0],'XTickLabelRotation',70,'XTick',un
 crit_pval_benjamini = 0.05./(20:-1:1);
 mincolor = 0.3;
 colorstep = 0.015;
-for f_ind = 1:20
+for f_ind = 1:length(hpfs)
 
 
 center = (lpfs(f_ind) + hpfs(f_ind))./2;
 width = (lpfs(f_ind) - hpfs(f_ind))*0.975;
 val = all_real_diffs(f_ind);
-bh1(f_ind) = bar(ax1,center,val,width,'FaceColor',[mincolor+colorstep*f_ind,mincolor+colorstep*f_ind,1],'FaceAlpha',0.8);
+bh1(f_ind) = bar(ax1,center,val,width,'FaceColor',frq_cols(f_ind,:),'FaceAlpha',0.8);
 
 if pval(f_ind) < crit_pval_benjamini(sortid(f_ind))
     th(f_ind) = text(ax1, center, val + 0.03, '*','FontSize',15,'HorizontalAlignment','center');
-    bh1(f_ind).FaceColor = [0,0,1];
+    bh1(f_ind).FaceAlpha = 1;
 end
 val = all_mean_within_corrs(f_ind);
 
-bh2(f_ind) = bar(ax2,center,val,width,'FaceColor',[mincolor+colorstep*f_ind,mincolor+colorstep*f_ind,1],'FaceAlpha',0.8);
+bh2(f_ind) = bar(ax2,center,val,width,'FaceColor',frq_cols(f_ind,:),'FaceAlpha',0.8);
 if pval(f_ind) < crit_pval_benjamini(sortid(f_ind))
-    bh2(f_ind).FaceColor = [0,0,1];
+    bh2(f_ind).FaceAlpha = 1;
 end
 end
 % bh1(5).Visible = 'off';
