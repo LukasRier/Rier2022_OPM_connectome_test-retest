@@ -2,8 +2,7 @@ clear all
 clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-project_dir = 'R:\OPMMEG\Projects\movie\';
-project_dir = '/net/cador/data_local/Lukas/movie/';
+project_dir = 'F:\Rdrive\movie\';
 
 results_dir = [project_dir,'results',filesep,'connectome_fingerprints',filesep];
 mkdir(results_dir);
@@ -72,6 +71,7 @@ for n = 1:10
         sub_correl(n,m) = corr(run1sa_v_t,run2sb_v_t);
     end
 end
+%% Fingerprinting matrix
 figure(32767);
 pcolor(1:10,1:10,sub_correl);shading flat
 xticks([1 2 3 4 5 6 7 8 9 10]);
@@ -224,7 +224,7 @@ saveas(gcf,sprintf('%sFingerprinting_permutation_test_%d_%d_Hz.png',results_dir,
 end
 fclose(resf);
 
-%%
+%% Identifiability plot
 f1 = figure();
 f1.Position([3,4]) = [1100,550];
 ax1 = subplot(2,1,1);
