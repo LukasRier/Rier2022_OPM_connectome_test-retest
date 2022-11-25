@@ -1,15 +1,25 @@
+%% Script used to identify bad channels using noise recordings and task data
+% 
+% !!NOTE!! Run each cell separately and ensure each step is complete before
+% continuing to the next cell
 restoredefaultpath
-cleaning_only = 0;
 close all
 clear all
 clc
-%
+
+% Change subject and run number as appropriate
 sub = '010';
 ses = '002';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% select path to directory containing scripts and data directories
+
 % project_dir = 'R:\OPMMEG\Projects\movie\';
-% project_dir = 'F:\Rdrive\movie\';
-project_dir = '/net/cador/data_local/Lukas/movie/';
+project_dir = 'F:\Rdrive\movie\';
+% project_dir = '/net/cador/data_local/Lukas/movie/';
+if ~exist(project_dir,'dir')
+    error("Project directory does not exist! Change variable 'project_dir' appropriately.")
+end
+% relevant paths
 addpath([project_dir,'scripts',filesep,'fieldtrip-20190212'])
 addpath([project_dir,'scripts'])
 addpath([project_dir,'scripts',filesep,'Beamformer',filesep,''])
@@ -48,19 +58,18 @@ files.sens_order = '_sensor_order.mat';
 files.ICA = [path.ICA,filename];
 files.cleaning = [path.cleaning,filename];
 S.mri_file = [path.meshes,'sub-',sub,'_',filesep,'x.nii']; % only need path for beamformer and single shell function. bit hacky, FIX
+
 % global files
 cd(path.data)
 load([path.data,filename,'_meg.mat'],'fs','data','triggers')
 load([datadir,'derivatives',filesep,'helmet',filesep,'M1p5_adult.mat'])
 noisedata = load(sprintf('%s%s.mat',path.noise,files.noise));
 noise_fs = noisedata.fs; noise_data = noisedata.data; clear noisedata
-% basefilename = [path.main,'ses-',ses,'/Matt/'];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load MRI and meshes
 mri = ft_read_mri([path.mri,files.mri]);
 load([path.meshes,files.meshes],'meshes');
 load([path.meshes,files.voxlox],'voxlox');
-
 
 % Preproc
 % Mean correct
@@ -134,7 +143,9 @@ for ii = 1:length(bn)
     noise_ch_table.status(find(strcmp(noise_ch_table.name,bn{ii}))) = {'bad'};
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
+%% First inspection
+% Use the plotbrowser to identify bad channels using the spectra
+disp('Use the plotbrowser to identify bad channels using the spectra.')
 % plot spectra to check for bad channels
 [psd_data_all,fxx_d] = get_PSD(data_f,fs);
 
@@ -150,8 +161,12 @@ for ii = 1:length(phs);phs(ii).DisplayName = ch_table.name{ii};end
 plotbrowser;
 
 
+fprintf('Then remove channels using Bad_Channels...\n\n')
 
 %% remove bad channels (noise)
+disp('Un-tick all the Bad channels in the noise data and click update to remove them.')
+disp('Click "Remove bad channels" button once done.')
+
 [noise_ch_table] = Bad_Channels(noise_data_f',noise_ch_table,fs,hp,lp);
 
 %% make sure all bad channels are excluded from noise and MEG data again
@@ -162,6 +177,8 @@ for ii = 1:length(bn)
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% remove bad channels (data)
+disp('Un-tick all the Bad channels in the task data and click update to remove them.')
+disp('Click "Remove bad channels" button once done.')
 [ch_table] = Bad_Channels(data_f',ch_table,fs,hp,lp);
 %
 %% make sure all bad channels are excluded from noise and MEG data again
@@ -171,7 +188,7 @@ for ii = 1:length(bn)
     noise_ch_table.status(find(strcmp(noise_ch_table.name,bn{ii}))) = {'bad'};
 end
 
-%% Check final matrices are the same
+%% Write tables
 
 writetable(ch_table,[path.data,filename,files.channels,'_new'],...
         'WriteRowNames',true,'Delimiter','tab','FileType','text')
@@ -198,6 +215,7 @@ data_f_(bad_chans_data,:) = [];
 noise_ch_table_(bad_chans_noise,:) = [];%clear noise_ch_table
 noise_data_f_(bad_chans_noise,:) = [];
 
+% Sanity checks
 if size(data_f_,1) ~= size(noise_data_f_,1)
     error('Channel counts not the same!')
 end
@@ -205,7 +223,7 @@ end
 if ~all([ch_table_.name{:}] == [noise_ch_table_.name{:}])
     error('Noise and data channels not in same order!')
 end
-%%
+%% plot good data for final checks
 [psd_data_all,fxx_d] = get_PSD(data_f_,fs);
 
 [psd_data_all_n,fxx_n] = get_PSD(noise_data_f_,fs);
