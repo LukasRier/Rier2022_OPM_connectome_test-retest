@@ -1,44 +1,30 @@
-% clearvars
+clear all
 close all
 clc
-% Conn_analysis_MJB('001','001');
-% Conn_analysis_MJB('001','002');
-% clear all
-% Conn_analysis_MJB('002','001');
-% Conn_analysis_MJB('002','002');
-% clear all
-% Conn_analysis_MJB('003','001');
-% Conn_analysis_MJB('003','002');
-% clear all
-% Conn_analysis_MJB('004','001');
-% Conn_analysis_MJB('004','002');
-% clear all
-% Conn_analysis_MJB('005','001');
-% Conn_analysis_MJB('005','002');
-% clear all
-% Conn_analysis_MJB('006','001');
-% Conn_analysis_MJB('006','002');
-% clear all
-% Conn_analysis_MJB('007','001');
-% Conn_analysis_MJB('007','002');
-% clear all
-% Conn_analysis_MJB('008','001');
-% Conn_analysis_MJB('008','002');
-% clear all
-% Conn_analysis_MJB('009','001');
-% Conn_analysis_MJB('009','002');
-% clear all
-% Conn_analysis_MJB('010','001');
-% Conn_analysis_MJB('010','002');
 
 
-% restoredefaultpath
-% ft_defaults
-
-for sub_i = 1:10
+% project_dir = pwd;project_dir(end-6:end)=[];
+project_dir =  '/net/cador/data_local/Lukas/movie/'
+% for sub_i =10
+%     sub = sprintf('%3d',sub_i);sub(sub == ' ') = '0'
+%     for ses_i = 1:2
+%         ses = sprintf('%3d',ses_i);ses(ses == ' ') = '0'
+%         resting_VE_noise_proj_func(sub,ses,project_dir)
+%     end
+% end
+%%
+for sub_i = 5:6
     sub = sprintf('%3d',sub_i);sub(sub == ' ') = '0'
     for ses_i = 1:2
         ses = sprintf('%3d',ses_i);ses(ses == ' ') = '0'
-        data_cleaning_test(sub,ses)
+        resting_conn_func(sub,ses,project_dir)
     end
 end
+
+% for sub_i =1:10
+%     sub = sprintf('%3d',sub_i);sub(sub == ' ') = '0'
+%     for ses_i = 1:2
+%         ses = sprintf('%3d',ses_i);ses(ses == ' ') = '0'
+%         resting_VE_pow(sub,ses,project_dir)
+%     end
+% end
