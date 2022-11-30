@@ -6,6 +6,7 @@ clc
 addpath ./BrainPlots/
 addpath ./gifti-1.8/
 project_dir = '/net/cador/data_local/Lukas/movie/';
+project_dir = 'F:\Rdrive\movie\';
 results_dir = [project_dir,'results',filesep,'average_spectra',filesep];
 if ~exist(results_dir,'dir'); mkdir(results_dir);end
 datadir = [project_dir,'data',filesep];
@@ -62,7 +63,7 @@ for f_i = 1:length(hpfs)
     %     col_range = [0,max(mean_pow(:))];
     %     col_range = [min(mean_pow(:)),max(mean_pow(:))];
     col_range = [0,1].*max(mean_pow(:,f_i));
-    f1 = figure;
+    f1 = figure;f1.Renderer = 'painters';
     set(f1,'Color','w','Position',[680    71   386   907])
     ax(1) = axes;
     PaintBrodmannAreas_chooseview(mean_pow(:,f_i),78, 256, col_range,[], [], [-90,0])
@@ -84,9 +85,10 @@ for f_i = 1:length(hpfs)
     
     st = suptitle(band_name{f_i})
     % pause
-    st.FontSize = 35;
+    st.FontSize = 35;f1.Renderer = 'painters';
     drawnow
     saveas(f1,sprintf('%s%s_average_brains.png',results_dir,band_name{f_i}(2:end)))
+    saveas(f1,sprintf('%s%s_average_brains.svg',results_dir,band_name{f_i}(2:end)))
 end
 
 
@@ -174,7 +176,7 @@ xlims = [.5,50];
 c1 = [0.1216    0.4706    0.7059];
 c2 = [  0.2000    0.6275    0.1725];
 for x = regs
-    figure;set(gcf,'Color','w','Position',[63   507   815   420]);
+    figure;set(gcf,'Color','w','Position',[63   507   815   420],'Renderer','painters');
     s1 = subplot(2,1,1);
     plot(fxx,mean_PSD_raw(:,x),'Color',c1,'Linewidth',2);
     hold on
@@ -218,7 +220,10 @@ for x = regs
     PaintBrodmannAreas_1view(rrr,78, 256, [0,1],[], [] )
     if x == 25;view([0,0]),camlight;end
     ax2.Position=[0.8,0.27,0.1,0.15];
+    drawnow
+    set(gcf,'Renderer','painters');
     saveas(gcf,sprintf('%sregion_%d_average_specs_w_noise.png',results_dir,x))
+    saveas(gcf,sprintf('%sregion_%d_average_specs_w_noise.svg',results_dir,x))
 
 end
 
@@ -345,7 +350,7 @@ for f_i = 1:length(hpfs)
     stats.tstat(h==0) = nan;
     
     f1 = figure;clf
-    set(f1,'Color','w','Position',[680    71   386   907])
+    set(f1,'Color','w','Position',[680    71   386   907],'Renderer','painters')
     ax(1) = axes;
     
     PaintBrodmannAreas_chooseview(delta_psd,78, 256, col_range,[], [], [-90,0])
