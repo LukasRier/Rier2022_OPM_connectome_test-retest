@@ -4,6 +4,7 @@ clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 project_dir = 'R:\OPMMEG\Projects\movie\';
 project_dir = '/net/cador/data_local/Lukas/movie/';
+project_dir = 'F:\Rdrive\movie\';
 results_dir = [project_dir,'results',filesep,'average_connectomes',filesep];
 mkdir(results_dir)
 datadir = [project_dir,'data',filesep];
@@ -111,8 +112,9 @@ for f_ind = 1:length(hpfs)
     
     if dosave
         saveas(gcf,sprintf('%saverage_conn1_%d_%d_Hz_meancorr.png',results_dir,hp,lp));
+        saveas(gcf,sprintf('%saverage_conn1_%d_%d_Hz_meancorr.svg',results_dir,hp,lp));
     end
-    
+    %%
     
     mean_AEC_b2_corr = mean_AEC_b2_all_frq_corr{f_ind};
 
@@ -120,12 +122,13 @@ for f_ind = 1:length(hpfs)
        
     if dosave
         saveas(gcf,sprintf('%saverage_conn2_%d_%d_Hz_meancorr.png',results_dir,hp,lp));
+        saveas(gcf,sprintf('%saverage_conn2_%d_%d_Hz_meancorr.svg',results_dir,hp,lp));
     end
 end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% global mean connectivity figure
-f = figure(9999);clf
+f = figure(9999);clf;f.Renderer = 'painters';
 f.Color = 'w';
 ax = axes;
 hold on
@@ -162,12 +165,14 @@ ax.XTickLabel = band_name;ax.FontSize=15;
 % title(['Mean connectivity per band'])
 ylabel(['Mean global connectivity'])
 legend('Run1','Run2','std. dev.')
+f.Renderer = 'painters';
 if dosave
     saveas(f,sprintf('%saverage_conn_per_run.png',results_dir));
+    saveas(f,sprintf('%saverage_conn_per_run.svg',results_dir));
 end
 %% paired differences plot
 f = figure(1111);clf
-f.Color = 'w';
+f.Color = 'w';f.Renderer = 'painters';
 ax = axes;
 hold on
 frq_cols = [237,248,177
@@ -193,14 +198,16 @@ end
 ax.XTick=[1:length(hpfs)];
 ax.XTickLabel = band_name;ax.FontSize=15;
 ylabel(sprintf('Mean Connectivity difference'))
+f.Renderer = 'painters';
 % legend('Run1-Run2','std. dev.','Location','best')
 if dosave
     saveas(f,sprintf('%saverage_conn_differences.png',results_dir));
+    saveas(f,sprintf('%saverage_conn_differences.svg',results_dir));
 end
 %%
 
 fcorr = figure();clf
-fcorr.Color = 'w';
+fcorr.Color = 'w';fcorr.Renderer = 'painters';
 fcorr.Position = [133         326        1747         669];
 
 ax1 = subplot(2,length(hpfs),[length(hpfs)+1 : length(hpfs)*2]);
@@ -235,7 +242,7 @@ val = corr_vals(f_ind);
 bh1(f_ind) = bar(ax1,center,val,width,'FaceColor',frq_cols(f_ind,:),'FaceAlpha',0.8);
 
 if pval(f_ind) < crit_pval_benjamini(sortid(f_ind))
-    th(f_ind) = text(ax1, center, val + 0.1, '*','FontSize',15,'HorizontalAlignment','center');
+%     th(f_ind) = text(ax1, center, val + 0.1, '*','FontSize',15,'HorizontalAlignment','center');
     bh1(f_ind).FaceAlpha = 1;
 end
 if dosave;fprintf(resf,'Average conn correlation (%d-%dHz),%1.8f,p=,%1.8f\n',hpfs(f_ind),lpfs(f_ind),corr_vals(f_ind),pval(f_ind));end
@@ -247,8 +254,10 @@ end
 ax1.YLabel.String = sprintf('Between run correlation');
 set([ax1],'FontSize',15,'TickLength',[0,0],'XTickLabelRotation',70,'XTick',unique([hpfs,lpfs]));
 drawnow
+fcorr.Renderer = 'painters';
 if dosave
     saveas(fcorr,sprintf('%saverage_conn_betw_run_correlations_meancorr.png',results_dir));
+    saveas(fcorr,sprintf('%saverage_conn_betw_run_correlations_meancorr.svg',results_dir));
 end
 
 
@@ -256,7 +265,7 @@ end
 
 function plot_mat_n_brains(AECmat,predef_lims,f_ind,pctl,band_name)
 figure;
-set(gcf,'Position',[680 95 550 883],'Color','w')
+set(gcf,'Position',[680 95 550 883],'Color','w','Renderer','painters')
 subplot(4,2,1:4)
 imagesc(AECmat);colorbar;
 %     cLims = [-max(abs(mean_AEC_b(:))) max(abs(mean_AEC_b(:)))];
@@ -269,6 +278,9 @@ xticks([5, 14, 25, 37, 44, 53, 64, 76]);
 xticklabels({'L.M.Frontal', 'L.P.Motor', 'L.Calcarine',...
     'L.Cingulum', 'R.M.Frontal', 'R.P.Motor', 'R.Calcarine', 'R.Cingulum'});
 xtickangle(45)
+ax=gca;
+ax.FontSize=15; ax.Position([1,2]) = [0.15,0.67];
+
 drawnow
 ax3 = subplot(4,2,7);        ax3.Position = [0.05,0.005,0.45,0.24];
 go_netviewer_perctl_lim(AECmat,pctl,predef_lims(f_ind))
@@ -285,4 +297,6 @@ ax1.Position = [0.40,0,0.55,0.55];
 ax2.Position = [0.05,0.20,0.42,0.24];
 ax3.Position = [0.05,0.005,0.45,0.24];
 drawnow
+set(gcf,'Renderer','painters')
+
 end
