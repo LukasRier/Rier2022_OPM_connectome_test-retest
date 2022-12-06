@@ -261,8 +261,8 @@ set([ax1],'TickLength',[0,0],'XTickLabelRotation',70,'XTick',unique([hpfs,lpfs])
 bs_Ns = 2:10;
 n_choices = 1000;
 corrs=repmat({nan(1,n_choices)},length(hpfs),length(bs_Ns));
-mean_corrs(f_ind,bs_ind) = zeros(length(hpfs),length(bs_Ns));
-std_corrs(f_ind,bs_ind) = zeros(length(hpfs),length(bs_Ns));
+mean_corrs = zeros(length(hpfs),length(bs_Ns));
+std_corrs = zeros(length(hpfs),length(bs_Ns));
 for f_ind = 1:length(hpfs)
     for bs_ind = 1:length(bs_Ns)
         n_bs = bs_Ns(bs_ind);
