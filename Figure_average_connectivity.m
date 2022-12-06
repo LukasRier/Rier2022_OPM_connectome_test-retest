@@ -259,7 +259,7 @@ set([ax1],'TickLength',[0,0],'XTickLabelRotation',70,'XTick',unique([hpfs,lpfs])
 
 % Impact of N on group average, between-run correlation
 bs_Ns = 2:10;
-n_choices = 1000;
+n_choices = 5000;
 corrs=repmat({nan(1,n_choices)},length(hpfs),length(bs_Ns));
 mean_corrs = zeros(length(hpfs),length(bs_Ns));
 std_corrs = zeros(length(hpfs),length(bs_Ns));
