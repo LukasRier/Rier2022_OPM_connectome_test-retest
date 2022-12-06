@@ -257,9 +257,13 @@ ax1.YLabel.String = sprintf('Between-run correlation');
 % set([ax1],'FontSize',11,'TickLength',[0,0],'XTickLabelRotation',70,'XTick',unique([hpfs,lpfs]));
 set([ax1],'TickLength',[0,0],'XTickLabelRotation',70,'XTick',unique([hpfs,lpfs]));
 
-% Impact of N on group average, between-run correlation
-corrs={};
 bs_Ns = 2:10;
+% Impact of N on group average, between-run correlation
+corrs=repmat({},length(hpfs),length(bs_Ns));
+mean_corrs = zeros(length(hpfs),length(bs_Ns));
+std_corrs = zeros(length(hpfs),length(bs_Ns));
+
+
 for f_ind = 1:length(hpfs)
     for bs_ind = 1:length(bs_Ns)
         n_bs = bs_Ns(bs_ind);
