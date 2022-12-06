@@ -2,7 +2,7 @@ function go_netviewer_perctl(C,thresh,clim)
 
 C(eye(size(C))==1) = 0;
 if thresh < 1; thresh = thresh*100; end
-limit = prctile(C(triu(ones(size(C)),1)==1),thresh);
+limit = prctile(abs(C(triu(ones(size(C)),1)==1)),thresh);
 mask = abs(C) >= limit;
 
 % cLims = [-max(abs(C(:))) max(abs(C(:)))];
