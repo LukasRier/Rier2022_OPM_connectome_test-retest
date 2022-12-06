@@ -96,6 +96,7 @@ for f_ind = 1:length(hpfs)
 %     end
 end
 
+
 %% find limits 
 for f_ind = 1:length(hpfs)
     mean_AEC_b_corr = mean_AEC_b_all_frq_corr{f_ind};
@@ -207,10 +208,9 @@ end
 %%
 
 fcorr = figure();clf
-fcorr.Color = 'w';fcorr.Renderer = 'painters';
-fcorr.Position = [133         326        1747         669];
-
-ax1 = subplot(2,length(hpfs),[length(hpfs)+1 : length(hpfs)*2]);
+fcorr.Color = 'w';fcorr.Renderer = 'painters';fcorr.Units = 'centimeters';
+tit_fs = 10.8
+ax1 = subplot(3,length(hpfs),[length(hpfs)+1 : length(hpfs)*2]);
 hold on
 xlabel('Frequency (Hz)')
 figure(fcorr);
@@ -218,16 +218,18 @@ for f_ind = 1:length(hpfs)
     [rho_,pval_] = corr(mean_AEC_b_all_frq_corr{f_ind}(triu(ones(78),1)==1),mean_AEC_b2_all_frq_corr{f_ind}(triu(ones(78),1)==1));
     pval(f_ind) = pval_;
     corr_vals(f_ind) = rho_;
-    subplot(2,length(hpfs),f_ind)
-    plot(mean_AEC_b_all_frq_corr{f_ind}(triu(ones(78),1)==1),mean_AEC_b2_all_frq_corr{f_ind}(triu(ones(78),1)==1),'k.')
+    subplot(3,length(hpfs),f_ind)
+    plot(mean_AEC_b_all_frq_corr{f_ind}(triu(ones(78),1)==1),mean_AEC_b2_all_frq_corr{f_ind}(triu(ones(78),1)==1),'k.','MarkerSize',0.2)
     xlabel('Run 1')
     ylabel('Run 2')
     hold on
     xlims = ylim;
-    title(band_name{f_ind});
+    title(band_name{f_ind},'FontSize',tit_fs);
     xlim(xlims);ylim(xlims)
     plot(xlim,xlim,'r')
     axis square
+%     set(gca,'FontSize',11)
+
 end
 [~,sortid]= sort(pval);
 crit_pval_benjamini = 0.05./(length(hpfs):-1:1);
@@ -251,10 +253,41 @@ end
 % bh1(5).Visible = 'off';
 % bh2(5).Visible = 'off';
 % th(5).Visible = 'off';
-ax1.YLabel.String = sprintf('Between run correlation');
-set([ax1],'FontSize',15,'TickLength',[0,0],'XTickLabelRotation',70,'XTick',unique([hpfs,lpfs]));
+ax1.YLabel.String = sprintf('Between-run correlation');
+% set([ax1],'FontSize',11,'TickLength',[0,0],'XTickLabelRotation',70,'XTick',unique([hpfs,lpfs]));
+set([ax1],'TickLength',[0,0],'XTickLabelRotation',70,'XTick',unique([hpfs,lpfs]));
+
+% Impact of N on group average, between-run correlation
+bs_Ns = 2:10;
+for f_ind = 1:length(hpfs)
+    for bs_ind = 1:length(bs_Ns)
+        n_bs = bs_Ns(bs_ind);
+       [choices] = nchoosek(1:10,n_bs);
+        for ch_i = 1:size(choices,1)
+            g1 = mean(AEC_b_all_frq{f_ind}(:,:,choices(ch_i,:)),3);
+            g2 = mean(AEC_b2_all_frq{f_ind}(:,:,choices(ch_i,:)),3);
+            corrs{f_ind,bs_ind}(ch_i) = corr(g1(mask),g2(mask));
+        end
+        mean_corrs(f_ind,bs_ind) = mean(corrs{f_ind,bs_ind});
+        std_corrs(f_ind,bs_ind) = std(corrs{f_ind,bs_ind});
+    end
+    subplot(3,length(hpfs),2*length(hpfs)+f_ind)
+    plot(bs_Ns,mean_corrs(f_ind,:),'k-x')
+    hold on
+    errorbar(bs_Ns(1:end-1),mean_corrs(f_ind,1:end-1),std_corrs(f_ind,1:end-1),'k')
+    title(band_name(f_ind),'FontSize',tit_fs)
+    xticks(bs_Ns)
+    xlabel('Group size')
+    ylabel('Average corr.')
+    ylim([0,1])
+    xlim([1.5,10.5])
+%     set(gca,'FontSize',11)
+end
+fcorr.Position([3,4]) = [25 19];
+
 drawnow
 fcorr.Renderer = 'painters';
+
 if dosave
     saveas(fcorr,sprintf('%saverage_conn_betw_run_correlations_meancorr.png',results_dir));
     saveas(fcorr,sprintf('%saverage_conn_betw_run_correlations_meancorr.svg',results_dir));
