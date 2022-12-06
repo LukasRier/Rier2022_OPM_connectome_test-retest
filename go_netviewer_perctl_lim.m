@@ -39,7 +39,7 @@ else
     isSingleColour = false;
 end
 
-emap = (linspace(-3,3,length(cmap))).^2;
+emap = (linspace(-2,2,length(cmap))).^2;
 
 [i,j] = find(~isnan(C));
 for p=length(i):-1:1,
