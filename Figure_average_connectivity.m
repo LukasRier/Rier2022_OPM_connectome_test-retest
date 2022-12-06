@@ -103,6 +103,7 @@ for f_ind = 1:length(hpfs)
     mean_AEC_b2_corr = mean_AEC_b2_all_frq_corr{f_ind};
     predef_lims(f_ind)= max(abs([min([mean_AEC_b_corr(mask);mean_AEC_b2_corr(mask)]),max([mean_AEC_b_corr(mask);mean_AEC_b2_corr(mask)])]));
 end
+
 for f_ind = 1:length(hpfs)
     hp = hpfs(f_ind);
     lp = lpfs(f_ind);
@@ -125,6 +126,28 @@ for f_ind = 1:length(hpfs)
         saveas(gcf,sprintf('%saverage_conn2_%d_%d_Hz_meancorr.png',results_dir,hp,lp));
         saveas(gcf,sprintf('%saverage_conn2_%d_%d_Hz_meancorr.svg',results_dir,hp,lp));
     end
+end
+%%
+diff_lims = zeros(1,length(hpfs));
+for f_ind = 1:length(hpfs)
+    hp = hpfs(f_ind);
+    lp = lpfs(f_ind);
+    
+    mean_AEC_b_corr = mean_AEC_b_all_frq_corr{f_ind};    
+    %
+    
+    mean_AEC_b2_corr = mean_AEC_b2_all_frq_corr{f_ind};
+    P=nan(78);T=nan(78);
+    for ind = find(mask)'
+      
+        [xi,yi] = ind2sub([78,78],ind);
+    [h,p,~,stat] = ttest2(squeeze(AEC_b_all_frq{f_ind}(xi,yi,:)),squeeze(AEC_b2_all_frq{f_ind}(xi,yi,:)));
+    P(xi,yi) = p; P(yi,xi) = p;
+    T(xi,yi) = stat.tstat; T(yi,xi) = stat.tstat;
+    end
+    mean_diff = T;
+    diff_lims(1,f_ind) = max(abs([min(mean_diff(mask)),max(mean_diff(mask))]));
+    plot_mat_n_brains(mean_diff,diff_lims,f_ind,75,band_name)
 end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
