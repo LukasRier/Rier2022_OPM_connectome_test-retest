@@ -259,14 +259,19 @@ set([ax1],'TickLength',[0,0],'XTickLabelRotation',70,'XTick',unique([hpfs,lpfs])
 
 % Impact of N on group average, between-run correlation
 bs_Ns = 2:10;
+n_choices = 1000;
 for f_ind = 1:length(hpfs)
     for bs_ind = 1:length(bs_Ns)
         n_bs = bs_Ns(bs_ind);
-       [choices] = nchoosek(1:10,n_bs);
-        for ch_i = 1:size(choices,1)
+        fprintf('\nBand %d, N=%d:\n%s|\n',f_ind,n_bs,repmat(' ',1,20));    
+       [choices] = randi(n_bs,n_choices,n_bs);
+        for ch_i = 1:n_choices
             g1 = mean(AEC_b_all_frq{f_ind}(:,:,choices(ch_i,:)),3);
             g2 = mean(AEC_b2_all_frq{f_ind}(:,:,choices(ch_i,:)),3);
             corrs{f_ind,bs_ind}(ch_i) = corr(g1(mask),g2(mask));
+            if mod(ch_i,round(n_choices/20))==0
+                fprintf('#');
+            end
         end
         mean_corrs(f_ind,bs_ind) = mean(corrs{f_ind,bs_ind});
         std_corrs(f_ind,bs_ind) = std(corrs{f_ind,bs_ind});
@@ -274,7 +279,8 @@ for f_ind = 1:length(hpfs)
     subplot(3,length(hpfs),2*length(hpfs)+f_ind)
     plot(bs_Ns,mean_corrs(f_ind,:),'k-x')
     hold on
-    errorbar(bs_Ns(1:end-1),mean_corrs(f_ind,1:end-1),std_corrs(f_ind,1:end-1),'k')
+%     errorbar(bs_Ns(1:end-1),mean_corrs(f_ind,1:end-1),std_corrs(f_ind,1:end-1),'k')
+    errorbar(bs_Ns,mean_corrs(f_ind,:),std_corrs(f_ind,:),'k')
     title(band_name(f_ind),'FontSize',tit_fs)
     xticks(bs_Ns)
     xlabel('Group size')
@@ -283,6 +289,7 @@ for f_ind = 1:length(hpfs)
     xlim([1.5,10.5])
 %     set(gca,'FontSize',11)
 end
+fprintf('\n')
 fcorr.Position([3,4]) = [25 19];
 
 drawnow
