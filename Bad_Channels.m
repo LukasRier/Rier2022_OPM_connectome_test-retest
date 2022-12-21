@@ -1,4 +1,4 @@
-function [ch_table_new] = Bad_Channels(data_f,ch_table,fs,hp,lp)
+function [ch_table_new] = Bad_Channels(data_f,ch_table,fs)
 % [ch_table_new] = Bad_Channels(data_f,ch_table,fs,hp,lp)
 %% Plots channels and provides ui to remove bad channels 
 % 
@@ -45,7 +45,6 @@ end
 fig = gcf;
 fig.Color = [1,1,1];
 xlabel('Time (s)');ylabel('Channels')
-title(sprintf('All channels - Filtered data [%u - %u] Hz',hp,lp))
 
 % Load previous bad channels
 bad_ch = find(startsWith(ch_table.status,'bad'));
