@@ -13,10 +13,6 @@ datadir = [project_dir,'data',filesep];
 exp_type = 'task-movie';
 epoch_length = 5;
 
-%
-% hpfs = [4, 8,13,30, 50,30,35,40,52,55,60,65,70,75,80,85, 90,95,102,108];
-% lpfs = [8,12,30,50,100,40,45,48,60,65,70,75,80,85,90,95,100,98,110,112];
-
 hpfs = [4, 8,13,30,35,40];
 lpfs = [8,12,30,40,45,48];
 
@@ -32,8 +28,8 @@ for sub_i = 1:n_subs
     sub = sprintf('%3d',sub_i);sub(sub == ' ') = '0';
     for ses_i = 1:n_ses
         ses = sprintf('%3d',ses_i);ses(ses == ' ') = '0';
-        % sub = '001'
-        % ses = '001'
+   
+        
         fprintf(repmat(' ',1,41))
         
         filename = ['sub-',sub,'_',exp_type,'_','run-',ses];
@@ -48,7 +44,7 @@ for sub_i = 1:n_subs
             hp = hpfs(f_i);
             lp = lpfs(f_i);
             fname = sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.pow,files.pow,hp,lp);
-            load(fname,'filt_vars','ENV_std_over_mean');
+            load(fname,'filt_vars');
             band_vars(:,f_i,sub_i+n_subs*(ses_i-1)) = filt_vars;
             fprintf([repmat('\b',1,41),'Sub: %s | Ses: %s | %3d-%3d Hz (%2d/%2d)\n'],sub,ses,hp,lp,f_i,length(hpfs));
         end
@@ -60,8 +56,7 @@ mean_pow = mean(band_vars,3); % across subjects
 
 band_name = {'\theta','\alpha','\beta','\gamma_1','\gamma_2','\gamma_3'};
 for f_i = 1:length(hpfs)
-    %     col_range = [0,max(mean_pow(:))];
-    %     col_range = [min(mean_pow(:)),max(mean_pow(:))];
+
     col_range = [0,1].*max(mean_pow(:,f_i));
     f1 = figure;f1.Renderer = 'painters';
     set(f1,'Color','w','Position',[680    71   386   907])
@@ -71,7 +66,6 @@ for f_i = 1:length(hpfs)
     cb = colorbar;set(cb,'Location','southoutside');
     cb.Label.FontSize = 6;cb.FontSize=15;
     cb.Position([1,2]) = cb.Position([1,2])-[-0.05,0.07];
-    %     cb.Position([2,3]) = [cb.Position(2)-0.002,cb.Position(3)-0.004];
     drawnow
     
     ax(2) = axes;
@@ -113,13 +107,11 @@ for sub_i = 1:n_subs
         load(sprintf('%s%s_%d_%d_Hz_Z.mat',path.VEs,files.VEs,hp,lp),'VE')
         VE_raw = VE;
         [psd_raw,fxx] = pwelch(VE_raw,fs*5,[],[],fs);
-%         [psd_raw,fxx] = get_PSD(VE_raw',fs);
 
         PSDs_raw = cat(3,PSDs_raw,psd_raw);
         load(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.VEs,files.VEs,hp,lp),'VE')
         VE_std = VE;
         [psd_std,fxx] = pwelch(VE_std,fs*5,[],[],fs);
-%         [psd_std,fxx] = get_PSD(VE_std',fs);
 
         PSDs_std = cat(3,PSDs_std,psd_std);
         
@@ -129,12 +121,12 @@ for sub_i = 1:n_subs
         load(sprintf('%s%s_%d_%d_Hz_Z.mat',path.noiseVEs,files.noiseVEs,hp,lp),'VE_noise')
         VE_raw = VE_noise;
         [psd_raw,fxx] = pwelch(VE_raw,fs*5,[],[],fs);
-%         [psd_raw,fxx] = get_PSD(VE_raw',fs);
+
         noisePSDs_raw = cat(3,noisePSDs_raw,psd_raw);
         load(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.noiseVEs,files.noiseVEs,hp,lp),'VE_noise')
         VE_std = VE_noise;
         [psd_std,fxx] = pwelch(VE_std,fs*5,[],[],fs);
-%         [psd_std,fxx] = get_PSD(VE_std',fs);
+
         noisePSDs_std = cat(3,noisePSDs_std,psd_std);
     end
 end
@@ -158,15 +150,6 @@ mean_noisePSD_raw = mean(noisePSDs_raw(:,:,1:2:n_subs*n_ses),3);
 mean_noisePSD_raw2 = mean(noisePSDs_raw(:,:,2:2:n_subs*n_ses),3);
 err_noisePSD_raw =  std(noisePSDs_raw(:,:,1:2:n_subs*n_ses),[],3)./sqrt(n_subs);
 err_noisePSD_raw2 = std(noisePSDs_raw(:,:,2:2:n_subs*n_ses),[],3)./sqrt(n_subs);
-%
-% mean_PSD_raw = sqrt(mean(PSDs_raw(:,:,1:2:n_subs*n_ses),3));
-% mean_PSD_raw2 = sqrt(mean(PSDs_raw(:,:,2:2:n_subs*n_ses),3));
-% err_PSD_raw =  sqrt(std(PSDs_raw(:,:,1:2:n_subs*n_ses),[],3)./sqrt(n_subs));
-% err_PSD_raw2 = sqrt(std(PSDs_raw(:,:,2:2:n_subs*n_ses),[],3)./sqrt(n_subs));
-% mean_noisePSD_raw = sqrt(mean(noisePSDs_raw(:,:,1:2:n_subs*n_ses),3));
-% mean_noisePSD_raw2 = sqrt(mean(noisePSDs_raw(:,:,2:2:n_subs*n_ses),3));
-% err_noisePSD_raw =  sqrt(std(noisePSDs_raw(:,:,1:2:n_subs*n_ses),[],3)./sqrt(n_subs));
-% err_noisePSD_raw2 = sqrt(std(noisePSDs_raw(:,:,2:2:n_subs*n_ses),[],3)./sqrt(n_subs));
 
 
 %%
@@ -191,7 +174,7 @@ for x = regs
     xlim(xlims)
     xlabel('Frequency (Hz)')
     legend('Run1','std. err.','Run2','std. err.','Empty Room','std. err.','Location','north')
-%     legend('Run1','Run2','Location','southeast')
+
     ylabel(y_ax_lbl)
     
     s2 = subplot(2,1,2);
@@ -255,7 +238,7 @@ ax(1).Position = [0.01,0.1,0.9,0.3];
 cb = colorbar;set(cb,'Location','southoutside');
 cb.Label.FontSize = 6;cb.FontSize=15;
 cb.Position([1,2]) = cb.Position([1,2])-[-0.05,0.07];
-%     cb.Position([2,3]) = [cb.Position(2)-0.002,cb.Position(3)-0.004];
+
 drawnow
 
 ax(2) = axes;
@@ -268,7 +251,7 @@ PaintBrodmannAreas_chooseview(pc_rms_diff,78, 256, col_range,[], [], [90,0] )
 ax(3).Position = [0.1,0.38,0.9,0.3];
 
 st = suptitle(sprintf('%% Difference (mean = %1.4f)',mean(pc_rms_diff)));
-% pause
+
 drawnow
 
 saveas(f1,sprintf('%sRMS_difference_AALbrain.png',results_dir))
@@ -308,7 +291,7 @@ for f_i = 1:length(hpfs)
     cb = colorbar;set(cb,'Location','southoutside');
     cb.Label.FontSize = 6;cb.FontSize=15;
     cb.Position([1,2]) = cb.Position([1,2])-[-0.05,0.07];
-    %     cb.Position([2,3]) = [cb.Position(2)-0.002,cb.Position(3)-0.004];
+
     drawnow
     
     ax(2) = axes;
@@ -321,8 +304,7 @@ for f_i = 1:length(hpfs)
     ax(3).Position = [0.1,0.38,0.9,0.3];
     
     st = suptitle(sprintf('SNR_{%s} (mean = %1.4f)',band_name{f_i},mean(band_SNR)));
-    % st.FontSize = 30;
-    % pause
+
     drawnow
     saveas(f1,sprintf('%sSNR_%d-%dHz_AALbrain.png',results_dir,hp,lp))
 
@@ -359,7 +341,7 @@ for f_i = 1:length(hpfs)
     cb = colorbar;set(cb,'Location','southoutside');
     cb.Label.FontSize = 6;cb.FontSize=15;cb.Label.String = 'fT^2/Hz';
     cb.Position([1,2]) = cb.Position([1,2])-[-0.05,0.07];
-    %     cb.Position([2,3]) = [cb.Position(2)-0.002,cb.Position(3)-0.004];
+
     drawnow
     
     ax(2) = axes;
@@ -372,8 +354,8 @@ for f_i = 1:length(hpfs)
     ax(3).Position = [0.1,0.38,0.9,0.3];
     
     st = suptitle(sprintf('%sPSD_{%s} (mean = %1.4f)','\Delta',band_name{f_i},mean(delta_psd)));
-    % st.FontSize = 30;
-    % pause
+
+    
     drawnow
     saveas(f1,sprintf('%sPSD_difference_%d-%dHz_AALbrain.png',results_dir,hp,lp))
 
@@ -388,7 +370,7 @@ for f_i = 1:length(hpfs)
     cb = colorbar;set(cb,'Location','southoutside');
     cb.Label.FontSize = 6;cb.FontSize=15;cb.Label.String = 'T-value (p<0.05)';
     cb.Position([1,2]) = cb.Position([1,2])-[-0.05,0.07];
-    %     cb.Position([2,3]) = [cb.Position(2)-0.002,cb.Position(3)-0.004];
+
     drawnow
     
     ax(2) = axes;
@@ -401,8 +383,7 @@ for f_i = 1:length(hpfs)
     ax(3).Position = [0.1,0.38,0.9,0.3];
     
     st = suptitle(sprintf('TStat | %s PSD_{%s} (mean = %1.4f)','\Delta',band_name{f_i},nanmean(stats.tstat)));
-    % st.FontSize = 30;
-    % pause
+
     drawnow
     saveas(f1,sprintf('%sTstat_PSD_diff_%d-%dHz_AALbrain.png',results_dir,hp,lp))
 
