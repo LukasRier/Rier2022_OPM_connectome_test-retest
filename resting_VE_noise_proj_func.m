@@ -1,15 +1,13 @@
 function resting_VE_noise_proj_func(sub,ses,project_dir)
+%% resting_VE_noise_proj_func
+% Estimate virtual electrodes and source power for OPM-MEG data and
+% beamform empty-room noise data
+
 restoredefaultpath
 cleaning_only = 0;
 close all
 clc
-% 
-% sub = '001';
-% ses = '001';
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% project_dir = 'R:\OPMMEG\Projects\movie\';
-% project_dir = 'F:\Rdrive\movie\';
-% project_dir = '/net/cador/data_local/Lukas/movie/';
+
 addpath([project_dir,'scripts',filesep,'fieldtrip-20190212'])
 addpath([project_dir,'scripts'])
 addpath([project_dir,'scripts',filesep,'Beamformer',filesep,''])
@@ -47,14 +45,14 @@ files.noise_channels = ['_channels.tsv'];
 files.sens_order = '_sensor_order.mat';
 files.ICA = [path.ICA,filename];
 files.cleaning = [path.cleaning,filename];
-S.mri_file = [path.meshes,'sub-',sub,'_',filesep,'x.nii']; % only need path for beamformer and single shell function. bit hacky, FIX
+S.mri_file = [path.meshes,'sub-',sub,'_',filesep,'x.nii']; % only need path for beamformer and single shell function.
 % global files
 cd(path.data)
 load([path.data,filename,'_meg.mat'],'fs','data','triggers')
 load([datadir,'derivatives',filesep,'helmet',filesep,'M1p5_adult.mat'])
 noisedata = load(sprintf('%s%s.mat',path.noise,files.noise));
 noise_fs = noisedata.fs; noise_data = noisedata.data; clear noisedata
-% basefilename = [path.main,'ses-',ses,'/Matt/'];
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load MRI and meshes
 mri = ft_read_mri([path.mri,files.mri]);
@@ -150,8 +148,7 @@ S.sensor_info.ors = [ch_table.Ox,ch_table.Oy,ch_table.Oz];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
 
-%% Mean field correction  stuff (later?)
-% N = sens_info.ors_used;
+%% Mean field correction
 N = S.sensor_info.ors; % orientation matrix (N_sens x 3)
 S.M = eye(length(N)) - N*pinv(N);
 
@@ -164,7 +161,6 @@ start_sample = start_sample1(1);
 end_sample = find(tr == -1);
 duration = floor((end_sample - start_sample)/fs);
 
-% data = data(start_sample+1:start_sample+duration*fs,:);
 data_f = data_f(:,start_sample+1:start_sample+duration*fs);
 
 % View data again
@@ -174,7 +170,7 @@ data_f = data_f(:,start_sample+1:start_sample+duration*fs);
 epoch_length = 5;
 data_f_mat = reshape(data_f,[size(data_f,1),epoch_length*fs,duration/epoch_length]);
 clear data_f
-% noise_data_f_mat = reshape(new_noise_data_f,[size(new_noise_data_f,1),epoch_length*fs,noise_duration/epoch_length]);
+
 %% Put data in FT format
 disp("Converting to FieldTrip format")
 [data_strct] = makeFTstruct(data_f_mat,fs,ch_table,S.sensor_info);
@@ -277,7 +273,7 @@ comp1200        = ft_componentanalysis(cfg, data_vis_clean);
 
 % Plot comps again to confirm they are correct
 disp("Confirm bad ICA components")
-% [bad_comps] = plot_ICA_comps(comp1200,ch_table,lay,bad_comps)
+
 save([files.ICA,'_bad_ICA_comps.mat'],'bad_comps');
 
 % Remove components from data
@@ -357,10 +353,7 @@ ft_plot_topo3d(double(S.sensor_info.pos(ch_table.isz==1,:)),Lead_fields(ch_table
 alpha(gca,0.5)
 plot3(S.sensor_info.pos(ch_table.isx==1,1),S.sensor_info.pos(ch_table.isx==1,2),S.sensor_info.pos(ch_table.isx==1,3),'go','linewidth',3)
 scatter3(sourcepos(1,16),sourcepos(2,16),sourcepos(3,16),'r','linewidth',4)
-% quiver3(S.sensor_info.pos(ch_table.isx==1,1),S.sensor_info.pos(ch_table.isx==1,2),S.sensor_info.pos(ch_table.isx==1,3),...
-%     S.sensor_info.ors(ch_table.isx==1,1).*Lead_fields(ch_table.isx==1,2,16) + S.sensor_info.ors(ch_table.isy==1,1).*Lead_fields(ch_table.isy==1,2,16) + S.sensor_info.ors(ch_table.isz==1,1).*Lead_fields(ch_table.isz==1,2,16),...
-%     S.sensor_info.ors(ch_table.isx==1,2).*Lead_fields(ch_table.isx==1,2,16) + S.sensor_info.ors(ch_table.isy==1,2).*Lead_fields(ch_table.isy==1,2,16) + S.sensor_info.ors(ch_table.isz==1,2).*Lead_fields(ch_table.isz==1,2,16),...
-%     S.sensor_info.ors(ch_table.isx==1,3).*Lead_fields(ch_table.isx==1,2,16) + S.sensor_info.ors(ch_table.isy==1,3).*Lead_fields(ch_table.isy==1,2,16) + S.sensor_info.ors(ch_table.isz==1,3).*Lead_fields(ch_table.isz==1,2,16),'r','linewidth',2)
+
 quiver3(S.sensor_info.pos(ch_table.isz==1,1),S.sensor_info.pos(ch_table.isz==1,2),S.sensor_info.pos(ch_table.isz==1,3),...
     S.sensor_info.ors(ch_table.isz==1,1).*Lead_fields(ch_table.isz==1,2,16),...
     S.sensor_info.ors(ch_table.isz==1,2).*Lead_fields(ch_table.isz==1,2,16),...
@@ -382,7 +375,7 @@ if ~cleaning_only
     Cr_inv = inv(Cr);
     for n = 1:Ndips
         this_L = Lead_fields(:,:,n);
-%         W_v = inv((this_L'*Cr_inv*this_L))*(this_L'*Cr_inv);
+
         iPower_v = this_L'*Cr_inv*this_L;
         [v,d] = svd(iPower_v);
         [~,id] = min(diag(d));
@@ -391,10 +384,12 @@ if ~cleaning_only
         VE(:,n) = (w*data_f'./sqrt(w*w'));
         VE_noise(:,n) = (w*noise_data_f./sqrt(w*w'));
     end
+    % Virtual electrodes (weights normalised)
     save(sprintf('%s%s_%d_%d_Hz_Z.mat',path.VEs,files.VEs,hp,lp),'VE')
     save(sprintf('%s%s_%d_%d_Hz_Z.mat',path.noiseVEs,files.noiseVEs,hp,lp),'VE_noise')
 
     VE = (VE - mean(VE,1))./std(VE,[],1);
+    % Z normalised virtual electrodes
     VE_noise = (VE_noise - mean(VE_noise,1))./std(VE_noise,[],1);
     save(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.VEs,files.VEs,hp,lp),'VE')
     save(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.noiseVEs,files.noiseVEs,hp,lp),'VE_noise')
@@ -402,8 +397,8 @@ if ~cleaning_only
     load(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.VEs,files.VEs,hp,lp),'VE')
     load(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.noiseVEs,files.noiseVEs,hp,lp),'VE_noise')
     
-    hpfs = [2,4, 8,13,30,35,40];
-    lpfs = [4,8,12,30,40,45,48];
+    hpfs = [4, 8,13,30,35,40];
+    lpfs = [8,12,30,40,45,48];
     
     N_fs = length(hpfs);
     for f_i = 1:N_fs

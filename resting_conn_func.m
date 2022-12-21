@@ -1,11 +1,12 @@
 function resting_conn_func(sub,ses,project_dir)
+%% resting_conn_func
+% Estimate AEC functional connectivity for subject sub-[sub] and session
+% ses-[ses] for data saved in [project_dir].
 restoredefaultpath
 cleaning_only = 0;
 close all
 clc
 
-% sub = '004';
-% ses = '001';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 addpath([project_dir,'scripts',filesep,'fieldtrip-20190212'])
 addpath([project_dir,'scripts'])
@@ -136,7 +137,7 @@ S.sensor_info.ors = [ch_table.Ox,ch_table.Oy,ch_table.Oz];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
 
-%% Mean field correction  stuff (later?)
+%% Mean field correction
 % N = sens_info.ors_used;
 N = S.sensor_info.ors; % orientation matrix (N_sens x 3)
 S.M = eye(length(N)) - N*pinv(N);
@@ -150,10 +151,9 @@ start_sample = start_sample1(1);
 end_sample = find(tr == -1);
 duration = floor((end_sample - start_sample)/fs);
 
-% data = data(start_sample+1:start_sample+duration*fs,:);
 data_f = data_f(:,start_sample+1:start_sample+duration*fs);
 
-% View data again
+% Uncomment to view data again
 %   Bad_Channels(data_f',ch_table,fs,hp,lp);
 
 % chop into short segments
@@ -341,10 +341,7 @@ ft_plot_topo3d(double(S.sensor_info.pos(ch_table.isz==1,:)),Lead_fields(ch_table
 alpha(gca,0.5)
 plot3(S.sensor_info.pos(ch_table.isx==1,1),S.sensor_info.pos(ch_table.isx==1,2),S.sensor_info.pos(ch_table.isx==1,3),'go','linewidth',3)
 scatter3(sourcepos(1,16),sourcepos(2,16),sourcepos(3,16),'r','linewidth',4)
-% quiver3(S.sensor_info.pos(ch_table.isx==1,1),S.sensor_info.pos(ch_table.isx==1,2),S.sensor_info.pos(ch_table.isx==1,3),...
-%     S.sensor_info.ors(ch_table.isx==1,1).*Lead_fields(ch_table.isx==1,2,16) + S.sensor_info.ors(ch_table.isy==1,1).*Lead_fields(ch_table.isy==1,2,16) + S.sensor_info.ors(ch_table.isz==1,1).*Lead_fields(ch_table.isz==1,2,16),...
-%     S.sensor_info.ors(ch_table.isx==1,2).*Lead_fields(ch_table.isx==1,2,16) + S.sensor_info.ors(ch_table.isy==1,2).*Lead_fields(ch_table.isy==1,2,16) + S.sensor_info.ors(ch_table.isz==1,2).*Lead_fields(ch_table.isz==1,2,16),...
-%     S.sensor_info.ors(ch_table.isx==1,3).*Lead_fields(ch_table.isx==1,2,16) + S.sensor_info.ors(ch_table.isy==1,3).*Lead_fields(ch_table.isy==1,2,16) + S.sensor_info.ors(ch_table.isz==1,3).*Lead_fields(ch_table.isz==1,2,16),'r','linewidth',2)
+
 quiver3(S.sensor_info.pos(ch_table.isz==1,1),S.sensor_info.pos(ch_table.isz==1,2),S.sensor_info.pos(ch_table.isz==1,3),...
     S.sensor_info.ors(ch_table.isz==1,1).*Lead_fields(ch_table.isz==1,2,16),...
     S.sensor_info.ors(ch_table.isz==1,2).*Lead_fields(ch_table.isz==1,2,16),...
@@ -354,8 +351,8 @@ clearvars -except path files sub ses epoch_length data_f_clean cleaning_only fs 
 %%
 %% filter the OPM data to band of interest
 if ~cleaning_only
-    hpfs = [2,4, 8,13,30,35,40];
-    lpfs = [4,8,12,30,40,45,48];
+    hpfs = [4, 8,13,30,35,40];
+    lpfs = [8,12,30,40,45,48];
     
     for f_i = 1:length(hpfs)
        
@@ -385,7 +382,7 @@ if ~cleaning_only
         end
         save(sprintf('%s%s_%d_%d_Hz_Z.mat',path.VEs,files.VEs,hp,lp),'VE')
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%
+        %% Estimate AEC with pairwise leakage correction
         down_f = 10;
         Nlocs = 78;
         AEC = zeros(Nlocs,Nlocs);
@@ -418,7 +415,7 @@ if ~cleaning_only
         subplot(121)
         imagesc(AEC);colorbar;
         subplot(122)
-        go_netviewer_Matt(AEC,0.7)
+        go_netviewer_perctl(AEC,0.95)
         drawnow
         save(sprintf('%s%s_%d_%d_Hz_Z.mat',path.AEC,files.AEC,hp,lp),'AEC')
         end
