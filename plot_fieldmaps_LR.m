@@ -1,22 +1,14 @@
 function [xn, yn, cn, xi, yi,p] = plot_fieldmaps_LR(vals, lay, ax)
-% if isempty(ax)
-%     ax = gca;
-% end
-% Plots field map on top of layout.
-% c = Nx1 vector (where N = number of channels)
-% addpath('R:\Matlab_files\fieldtrip-20190212\')
-% addpath('R:\Matlab_files\fieldtrip-20190212\plotting\')
-% Pick layout
-if isempty('lay')
-    filename = uigetfile('R:\Matlab_files\fieldtrip-20190212\template\layout\*');
-    cfg = [];
-    cfg.layout = filename;
-    cfg.skipcomnt = 'yes';
-    cfg.skipscale = 'yes';
-    layout = ft_prepare_layout(cfg);
-else
-    layout = lay;
-end
+%% PLOT_FIELDMAPS_LR
+% Generate a fieldmap for OPM-MEG data
+%
+% vals...values to be plotted (one per channel in lay
+% lay....layout in FieldTrip format containing fields pos with x/y coordinates and
+% outline of the head
+% ax.....Figure axes handle
+
+layout = lay;
+
 % define colormap
 ncolor = 100;
 cmap =[linspace(1,0,ncolor/4);linspace(1,0,ncolor/4); linspace(1,1,ncolor/4)]';
@@ -39,10 +31,7 @@ layout.pos(z_idx,:) = [];
 ngrid  = 500;
 x = layout.pos(:,1)';
 y = layout.pos(:,2)';
-% xmin = min(x);
-% xmax = max(x);
-% ymin = min(y);
-% ymax = max(y);
+
 xmin = min(layout.outline{1,1}(:,1));
 xmax = max(layout.outline{1,1}(:,1));
 ymin = min(layout.outline{1,1}(:,2));
