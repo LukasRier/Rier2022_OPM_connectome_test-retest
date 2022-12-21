@@ -1,4 +1,4 @@
-﻿# Analysis pipeline for "Test-Retest Reliability of the Human Connectome: An OPM-MEG study" (In submission 2022)
+# Analysis pipeline for "Test-Retest Reliability of the Human Connectome: An OPM-MEG study" (In submission 2022)
 
 Lukas Rier[1], Sebastian Michelmann[2], Harrison Ritz[2], Vishal Shah[3], Ryan M. Hill[1,4], James Osborne[3], Cody Doyle[3], Niall Holmes[1,4], Richard Bowtell[1], Matthew J. Brookes[1,4], Kenneth A. Norman[2], Uri Hasson[2], Jonathan D. Cohen[2] and Elena Boto[1,4]
  
@@ -13,9 +13,11 @@ Lukas Rier[1], Sebastian Michelmann[2], Harrison Ritz[2], Vishal Shah[3], Ryan M
 -------
 
 All data used can be found at https://doi.org/10.5072/zenodo.1134455.
-Create a new directory - your project_directory - containing subdirectories 'scripts' and 'data' 
+Create a new directory - your project_directory - containing subdirectories 'scripts' and 'data'
 
-Download and extract the zip folder to '/project_directory/data' and clone this repository to '/project_directory/data' to get the following file structure:
+Download FieldTrip version 20199212 at https://www.fieldtriptoolbox.org/download.php and save the toolbox to '/project_directory/scripts'.
+
+Download and extract the zip folder to '/project_directory/data' and clone this repository to '/project_directory/scripts' to get the following file structure:
    
 |project_directory   
 |---|--> data   
