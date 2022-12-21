@@ -1,5 +1,9 @@
 clearvars
-project_dir = 'F:\Rdrive\movie\';
+
+project_dir = '/path/to/data/folder';
+if ~exist(project_dir,'dir')
+    error('Set project directory!')
+end
 fc_dir = ['data',filesep,'derivatives',filesep,'field_control',filesep];
 results_dir = [project_dir,'results',filesep];
 

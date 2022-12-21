@@ -1,4 +1,8 @@
 function go_netviewer_perctl(C,thresh,clim)
+% Plot connectome using 78 AAL locations
+% C is the connectivity matrix
+% Only values above the threshold (in percent) are visualised
+% specify color axis limits in clim
 
 C(eye(size(C))==1) = 0;
 if thresh < 1; thresh = thresh*100; end

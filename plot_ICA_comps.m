@@ -1,7 +1,6 @@
 function [bad_comps] = plot_ICA_comps(comp150,ch_table,lay,bad_comps)
 
-%% Lukas Rier July 2022
-% NOT QUITE DONE
+%% plot fieldtrip ICA results for triaxial OPM-arrays
 
 comps_n_page = 7;
 currpage = 1;

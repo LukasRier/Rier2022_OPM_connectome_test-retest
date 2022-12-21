@@ -7,6 +7,10 @@ cleaning_only = 0;
 close all
 clc
 
+% set project dir to directory containing data from https://doi.org/10.5072/zenodo.1134455
+if ~exist(project_dir,'dir')
+    error('Set project directory!')
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 addpath([project_dir,'scripts',filesep,'fieldtrip-20190212'])
 addpath([project_dir,'scripts'])

@@ -1,5 +1,5 @@
 function ciplot(lower,upper,x,colour)
-     
+%% ciplot
 % ciplot(lower,upper)       
 % ciplot(lower,upper,x)
 % ciplot(lower,upper,x,colour)

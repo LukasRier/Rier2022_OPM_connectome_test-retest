@@ -2,9 +2,11 @@ clear all
 clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-project_dir = 'R:\OPMMEG\Projects\movie\';
-project_dir = '/net/cador/data_local/Lukas/movie/';
-project_dir = 'F:\Rdrive\movie\';
+% set project dir to directory containing data from https://doi.org/10.5072/zenodo.1134455
+project_dir = '/path/to/data/folder';
+if ~exist(project_dir,'dir')
+    error('Set project directory!')
+end
 results_dir = [project_dir,'results',filesep,'average_connectomes',filesep];
 mkdir(results_dir)
 datadir = [project_dir,'data',filesep];

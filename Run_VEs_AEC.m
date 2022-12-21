@@ -3,9 +3,10 @@ close all
 clc
 
 % set project dir to directory containing data from https://doi.org/10.5072/zenodo.1134455
-
-project_dir =  'path/to/project/'
-
+project_dir = '/path/to/data/folder';
+if ~exist(project_dir,'dir')
+    error('Set project directory!')
+end
 %% Generate virtual electrodes and source power for MEG and empty room noise data
 for sub_i =1:10
     sub = sprintf('%3d',sub_i);sub(sub == ' ') = '0'

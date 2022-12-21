@@ -5,8 +5,13 @@ clearvars
 clc
 addpath ./BrainPlots/
 addpath ./gifti-1.8/
-project_dir = '/net/cador/data_local/Lukas/movie/';
-project_dir = 'F:\Rdrive\movie\';
+
+% set project dir to directory containing data from https://doi.org/10.5072/zenodo.1134455
+project_dir = '/path/to/data/folder';
+if ~exist(project_dir,'dir')
+    error('Set project directory!')
+end
+
 results_dir = [project_dir,'results',filesep,'average_spectra',filesep];
 if ~exist(results_dir,'dir'); mkdir(results_dir);end
 datadir = [project_dir,'data',filesep];
@@ -320,7 +325,7 @@ for f_i = 1:length(hpfs)
     lp = lpfs(f_i);
     band_inds = fxx > hp & fxx < lp;
     delta_psd = mean(squeeze(mean(PSD_diff(band_inds,:,:),1)),2);
-    col_range = [-1,1].*max(abs([min(delta_psd),max(delta_psd)]));%[0,1].*max(band_SNR);%col_range = [0,10];
+    col_range = [-1,1].*max(abs([min(delta_psd),max(delta_psd)]));
     
     fprintf(resf,'PSD diff (%d-%dHz),%1.8f,%1.8f,%1.8f,%1.8f\n',hp,lp,mean(delta_psd),std(delta_psd),col_range(1),col_range(2));
     [h,p,ci,stats] = ttest(squeeze(mean(PSDs_raw_run1(band_inds,:,:),1))',squeeze(mean(PSDs_raw_run2(band_inds,:,:),1))');

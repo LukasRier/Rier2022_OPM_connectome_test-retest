@@ -1,4 +1,11 @@
 function [po, fs] = get_PSD(data,f)
+%% [po, fs] = get_PSD(data,f)
+% Calculate power spectrum from data (Number of channels x number of
+% samples) with sampling frequency f
+% po....power spectrum for each channel
+% fs....frequency axis values
+%
+
 S = []; 
 eD = [];
 S.trialength = 5*f;

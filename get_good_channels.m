@@ -13,12 +13,12 @@ ses = '002';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% select path to directory containing scripts and data directories
 
-% project_dir = 'R:\OPMMEG\Projects\movie\';
-project_dir = 'F:\Rdrive\movie\';
-% project_dir = '/net/cador/data_local/Lukas/movie/';
+% set project dir to directory containing data from https://doi.org/10.5072/zenodo.1134455
+project_dir = '/path/to/data/folder';
 if ~exist(project_dir,'dir')
-    error("Project directory does not exist! Change variable 'project_dir' appropriately.")
+    error('Set project directory!')
 end
+
 % relevant paths
 addpath([project_dir,'scripts',filesep,'fieldtrip-20190212'])
 addpath([project_dir,'scripts'])

@@ -1,5 +1,7 @@
 function go_netviewer_perctl(C,thresh)
-
+% Plot connectome using 78 AAL locations
+% C is the connectivity matrix
+% Only values above the threshold (in percent) are visualised 
 C(eye(size(C))==1) = 0;
 if thresh < 1; thresh = thresh*100; end
 limit = prctile(C(triu(ones(size(C)),1)==1),thresh);

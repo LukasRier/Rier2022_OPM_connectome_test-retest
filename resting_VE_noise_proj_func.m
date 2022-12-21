@@ -8,6 +8,9 @@ cleaning_only = 0;
 close all
 clc
 
+if ~exist(project_dir,'dir')
+    error('Set project directory!')
+end
 addpath([project_dir,'scripts',filesep,'fieldtrip-20190212'])
 addpath([project_dir,'scripts'])
 addpath([project_dir,'scripts',filesep,'Beamformer',filesep,''])

@@ -1,4 +1,9 @@
 function [artifacts] = get_bad_segments(data_mat,thresh_val)
+% Find bad epocs using variance threshold specify by thresh val.
+% data_mat contains data (number of channels x number of samples per epoch x number of epochs)
+% specifies a portion of each epoch as bad so they can be excluded using
+% ft_reject_artifact
+
 Ntrials = size(data_mat,3);
 std_data_mat = squeeze(std(data_mat,[],2));
 std_data_mat_cent = std_data_mat - repmat(mean(std_data_mat,2),1,size(std_data_mat,2));
