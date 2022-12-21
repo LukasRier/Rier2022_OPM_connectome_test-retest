@@ -9,3 +9,6 @@ Lukas Rier[1], Sebastian Michelmann[2], Harrison Ritz[2], Vishal Shah[3], Ryan M
 [3] QuSpin Inc. 331 South 104th Street, Suite 130, Louisville, Colorado, 80027, USA.
 
 [4] Cerca Magnetics Limited, 2 Castlebridge Office Village, Kirtley Drive, Nottingham, NG7 1LD, Nottingham, UK.
+
+Run_VEs_AEC.m will generate all necessary outputs to produce results presented in "Test-Retest Reliability of the Human Connectome: An OPM-MEG study".
+Figure_Spectral_Power.m, Figure_individual_connectomes.m, Figure_Conn_fingerprinting.m,Figure_average_connectivity.m reproduce all figure elements
