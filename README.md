@@ -24,7 +24,7 @@ Download and extract the zip folder to '/project_directory/data' and clone this 
 |------|--> sub-002   
 |------|--> ...   
 |------|--> sub-010   
-|------participants.txv   
+|------participants.tsv   
 |---|--> scripts   
 |------|--> Beamformer   
 |------|--> BrainPlots   
