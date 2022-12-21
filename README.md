@@ -31,6 +31,7 @@ Download and extract the zip folder to '/project_directory/data' and clone this 
 |------|--> fieldtrip-20199212   
 |------|--> gifti-1.8   
 |------...   
-   
+
 Run_VEs_AEC.m will generate all necessary outputs to produce results presented in "Test-Retest Reliability of the Human Connectome: An OPM-MEG study".
 Figure_Spectral_Power.m, Figure_individual_connectomes.m, Figure_Conn_fingerprinting.m,Figure_average_connectivity.m reproduce all figure elements
+Edit the scripts above to include the path to your project directory in ```project_dir``` before running the analyses.
