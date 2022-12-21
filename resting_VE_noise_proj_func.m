@@ -405,19 +405,16 @@ if ~cleaning_only
         hp = hpfs(f_i);
         lp = lpfs(f_i);
         
-        fprintf('Sub: %s | Session: %s | Freq %2d/%2d (%3d-%3d Hz) | pow and env dynamics\n',sub,ses,f_i,N_fs,hp,lp);
+        fprintf('Sub: %s | Session: %s | Freq %2d/%2d (%3d-%3d Hz) | power\n',sub,ses,f_i,N_fs,hp,lp);
         [b,a] = butter(4,2*[hp lp]/fs);
         VE_f = [filtfilt(b,a,VE)];
-        hilb_envs = abs(hilbert(VE_f));
-        ENV_std_over_mean = std(hilb_envs,[],1)./mean(hilb_envs,1);clear hilb_envs 
+
         filt_vars= var(VE_f,[],1); clear VE_f
-        save(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.pow,files.pow,hp,lp),'filt_vars','ENV_std_over_mean')
+        save(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.pow,files.pow,hp,lp),'filt_vars')
         
         VE_noise_f = [filtfilt(b,a,VE_noise)];
-        hilb_envs_noise = abs(hilbert(VE_noise_f));
-        ENV_std_over_mean_noise = std(hilb_envs_noise,[],1)./mean(hilb_envs_noise,1);
         filt_vars_noise= var(VE_noise_f,[],1);
-        save(sprintf('%s%s_%d_%d_Hz_Z_standard_noise.mat',path.pow,files.pow,hp,lp),'filt_vars_noise','ENV_std_over_mean_noise')
+        save(sprintf('%s%s_%d_%d_Hz_Z_standard_noise.mat',path.pow,files.pow,hp,lp),'filt_vars_noise')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%
     end
@@ -429,20 +426,18 @@ if ~cleaning_only
     for f_i = 1:N_fs
         hp = hpfs(f_i);
         lp = lpfs(f_i);  
-        fprintf('Sub: %s | Session: %s | Freq %2d/%2d (%3d-%3d Hz) | pow and env dynamics\n',sub,ses,f_i,N_fs,hp,lp);
+        fprintf('Sub: %s | Session: %s | Freq %2d/%2d (%3d-%3d Hz) | power\n',sub,ses,f_i,N_fs,hp,lp);
 
         [b,a] = butter(4,2*[hp lp]/fs);
         VE_f = filtfilt(b,a,VE);
-        hilb_envs = abs(hilbert(VE_f));
-        ENV_std_over_mean = std(hilb_envs,[],1)./mean(hilb_envs,1);clear hilb_envs 
+        
         filt_vars= var(VE_f,[],1);clear VE_f
-        save(sprintf('%s%s_%d_%d_Hz_Z.mat',path.pow,files.pow,hp,lp),'filt_vars','ENV_std_over_mean')
+        save(sprintf('%s%s_%d_%d_Hz_Z.mat',path.pow,files.pow,hp,lp),'filt_vars')
         
         VE_noise_f = filtfilt(b,a,VE_noise);
-        hilb_envs_noise = abs(hilbert(VE_noise_f));
-        ENV_std_over_mean_noise = std(hilb_envs_noise,[],1)./mean(hilb_envs_noise,1);
+
         filt_vars_noise= var(VE_noise_f,[],1);
-        save(sprintf('%s%s_%d_%d_Hz_Z_noise.mat',path.pow,files.pow,hp,lp),'filt_vars_noise','ENV_std_over_mean_noise')
+        save(sprintf('%s%s_%d_%d_Hz_Z_noise.mat',path.pow,files.pow,hp,lp),'filt_vars_noise')
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%
         

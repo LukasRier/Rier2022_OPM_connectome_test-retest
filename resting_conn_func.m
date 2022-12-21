@@ -408,7 +408,7 @@ if ~cleaning_only
                 end
             end
             if seed >1;fprintf(repmat('\b',1,72));end
-            fprintf('Sub: %s | Session: %s | Freq %2d/20 (%3d-%3d Hz) | AEC conn. region %2d\n',sub,ses,f_i,hp,lp,seed);
+            fprintf('Sub: %s | Session: %s | Freq %2d/6 (%3d-%3d Hz) | AEC conn. region %2d\n',sub,ses,f_i,hp,lp,seed);
         end
         AEC = 0.5*(AEC + AEC');
         figure()
