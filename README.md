@@ -10,5 +10,27 @@ Lukas Rier[1], Sebastian Michelmann[2], Harrison Ritz[2], Vishal Shah[3], Ryan M
 
 [4] Cerca Magnetics Limited, 2 Castlebridge Office Village, Kirtley Drive, Nottingham, NG7 1LD, Nottingham, UK.
 
+-------
+
+All data used can be found at https://doi.org/10.5072/zenodo.1134455.
+Create a new directory - your project_directory - containing subdirectories 'scripts' and 'data' 
+
+Download and extract the zip folder to '/project_directory/data' and clone this repository to '/project_directory/data' to get the following file structure:
+   
+|project_directory   
+|---|--> data   
+|------|--> derivatives   
+|------|--> sub-001   
+|------|--> sub-002   
+|------|--> ...   
+|------|--> sub-010   
+|------participants.txv   
+|---|--> scripts   
+|------|--> Beamformer   
+|------|--> BrainPlots   
+|------|--> fieldtrip-20199212   
+|------|--> gifti-1.8   
+|------...   
+   
 Run_VEs_AEC.m will generate all necessary outputs to produce results presented in "Test-Retest Reliability of the Human Connectome: An OPM-MEG study".
 Figure_Spectral_Power.m, Figure_individual_connectomes.m, Figure_Conn_fingerprinting.m,Figure_average_connectivity.m reproduce all figure elements
