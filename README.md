@@ -12,7 +12,9 @@ Lukas Rier[1], Sebastian Michelmann[2], Harrison Ritz[2], Vishal Shah[3], Ryan M
 
 -------
 
-All data used can be found at https://doi.org/10.5072/zenodo.1134455.
+All data used can be found on zenodo:
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7477061.svg)](https://doi.org/10.5281/zenodo.7477061)
+
 Create a new directory - your project_directory - containing subdirectories 'scripts' and 'data'
 
 Download FieldTrip version 20199212 at https://www.fieldtriptoolbox.org/download.php and save the toolbox to '/project_directory/scripts'.
