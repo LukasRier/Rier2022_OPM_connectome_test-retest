@@ -13,7 +13,7 @@ Lukas Rier[1], Sebastian Michelmann[2], Harrison Ritz[2], Vishal Shah[3], Ryan M
 -------
 
 All data used can be found on zenodo:
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7477061.svg)](https://doi.org/10.5281/zenodo.7477061)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7477060.svg)](https://doi.org/10.5281/zenodo.7477060)
 
 Create a new directory - your project_directory - containing subdirectories 'scripts' and 'data'
 
