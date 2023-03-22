@@ -1,4 +1,4 @@
-function resting_VE_noise_proj_func(sub,ses,project_dir)
+function resting_VE_noise_proj_func_radial(sub,ses,project_dir,sens_type)
 %% resting_VE_noise_proj_func
 % Estimate virtual electrodes and source power for OPM-MEG data and
 % beamform empty-room noise data
@@ -150,11 +150,6 @@ S.sensor_info.ors = [ch_table.Ox,ch_table.Oy,ch_table.Oz];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
-
-%% Mean field correction
-N = S.sensor_info.ors; % orientation matrix (N_sens x 3)
-S.M = eye(length(N)) - N*pinv(N);
-
 %% Epoch data
 % segment using trigger
 disp("Chopping data into 5s epochs")
@@ -296,8 +291,26 @@ clear data_vis_clean
 
 data_f_clean = [data_ica_clean.trial{1,:}]; clear data_ica_clean
 
-% apply mean field correction
+%%% remove channels for radial only / tangential only etc
+
+switch sens_type
+    case 'radial'
+        excluded_chans = (ch_table.isx | ch_table.isy);
+    case 'dualy'
+        excluded_chans = ~ch_table.isx;
+    case 'tangential'
+        excluded_chans = ch_table.isz==1;
+end
+S.sensor_info.pos(excluded_chans,:) = [];
+S.sensor_info.ors(excluded_chans,:) = [];
+data_f_clean(excluded_chans,:) = [];
+noise_data_f(excluded_chans,:) = [];
+ch_table(excluded_chans,:) = [];
+%% Mean field correction
 disp("Applying mean field correction")
+N = S.sensor_info.ors; % orientation matrix (N_sens x 3)
+S.M = eye(length(N)) - N*pinv(N);
+
 data_f_clean = S.M*data_f_clean;
 noise_data_f = S.M*noise_data_f;
 %% Further steps:
@@ -332,7 +345,8 @@ for n = 1:Ndips;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% make a plot of the geometry...
-figure(1);
+try
+    figure(1);
 ft_plot_mesh(meshes,'facecolor',[.5 .5 .5],'facealpha',.3,'edgecolor','none')
 hold on
 scatter3(sourcepos(1,:),sourcepos(2,:),sourcepos(3,:),'ro','linewidth',3)
@@ -349,7 +363,8 @@ quiver3(S.sensor_info.pos(ch_table.isz==1,1),S.sensor_info.pos(ch_table.isz==1,2
 plot3(Origin(1),Origin(2),Origin(3),'bo','linewidth',4)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% take a random lead field and plot it...
-figure(2);
+
+    figure(2);
 ft_plot_mesh(meshes,'facecolor',[.5 .5 .5],'facealpha',.3,'edgecolor','none')
 hold on
 ft_plot_topo3d(double(S.sensor_info.pos(ch_table.isz==1,:)),Lead_fields(ch_table.isz==1,1,16))
@@ -361,15 +376,16 @@ quiver3(S.sensor_info.pos(ch_table.isz==1,1),S.sensor_info.pos(ch_table.isz==1,2
     S.sensor_info.ors(ch_table.isz==1,1).*Lead_fields(ch_table.isz==1,2,16),...
     S.sensor_info.ors(ch_table.isz==1,2).*Lead_fields(ch_table.isz==1,2,16),...
     S.sensor_info.ors(ch_table.isz==1,3).*Lead_fields(ch_table.isz==1,2,16),'r','linewidth',2)
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clearvars -except path files sub ses epoch_length  data_f_clean cleaning_only fs sourcepos Lead_fields Ndips ...
-    noise_data_f hp lp
+    noise_data_f hp lp sens_type
 %%
 
 %% filter the OPM data to band of interest
 if ~cleaning_only
     
-    if ~exist(sprintf('%s%s_%d_%d_Hz_Z.mat',path.VEs,files.VEs,hp,lp),'file')
+    if ~exist(sprintf('%s%s_%d_%d_Hz_Z_%s.mat',path.VEs,files.VEs,hp,lp,sens_type),'file')
     data_f = data_f_clean';
     %% Beamform
     C = cov(data_f);
@@ -388,22 +404,23 @@ if ~cleaning_only
         VE_noise(:,n) = (w*noise_data_f./sqrt(w*w'));
     end
     % Virtual electrodes (weights normalised)
-    save(sprintf('%s%s_%d_%d_Hz_Z.mat',path.VEs,files.VEs,hp,lp),'VE')
-    save(sprintf('%s%s_%d_%d_Hz_Z.mat',path.noiseVEs,files.noiseVEs,hp,lp),'VE_noise')
+    save(sprintf('%s%s_%d_%d_Hz_Z_%s.mat',path.VEs,files.VEs,hp,lp,sens_type),'VE')
+    save(sprintf('%s%s_%d_%d_Hz_Z_%s.mat',path.noiseVEs,files.noiseVEs,hp,lp,sens_type),'VE_noise')
 
     VE = (VE - mean(VE,1))./std(VE,[],1);
     % Z normalised virtual electrodes
     VE_noise = (VE_noise - mean(VE_noise,1))./std(VE_noise,[],1);
-    save(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.VEs,files.VEs,hp,lp),'VE')
-    save(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.noiseVEs,files.noiseVEs,hp,lp),'VE_noise')
+    save(sprintf('%s%s_%d_%d_Hz_Z_standard_%s.mat',path.VEs,files.VEs,hp,lp,sens_type),'VE')
+    save(sprintf('%s%s_%d_%d_Hz_Z_standard_%s.mat',path.noiseVEs,files.noiseVEs,hp,lp,sens_type),'VE_noise')
     end
-    load(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.VEs,files.VEs,hp,lp),'VE')
-    load(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.noiseVEs,files.noiseVEs,hp,lp),'VE_noise')
+    load(sprintf('%s%s_%d_%d_Hz_Z_standard_%s.mat',path.VEs,files.VEs,hp,lp,sens_type),'VE')
+    load(sprintf('%s%s_%d_%d_Hz_Z_standard_%s.mat',path.noiseVEs,files.noiseVEs,hp,lp,sens_type),'VE_noise')
     
-    hpfs = [4, 8,13,30,35,40];
-    lpfs = [8,12,30,40,45,48];
+    hpfs = [4, 8,13,30,35,40,30];
+    lpfs = [8,12,30,40,45,48,48];
     
     N_fs = length(hpfs);
+    if ~exist(sprintf('%s%s_%d_%d_Hz_Z_noise_%s.mat',path.pow,files.pow,hpfs(end),lpfs(end),sens_type),'file')
     for f_i = 1:N_fs
         hp = hpfs(f_i);
         lp = lpfs(f_i);
@@ -413,17 +430,17 @@ if ~cleaning_only
         VE_f = [filtfilt(b,a,VE)];
 
         filt_vars= var(VE_f,[],1); clear VE_f
-        save(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.pow,files.pow,hp,lp),'filt_vars')
+        save(sprintf('%s%s_%d_%d_Hz_Z_standard_%s.mat',path.pow,files.pow,hp,lp,sens_type),'filt_vars')
         
         VE_noise_f = [filtfilt(b,a,VE_noise)];
         filt_vars_noise= var(VE_noise_f,[],1);
-        save(sprintf('%s%s_%d_%d_Hz_Z_standard_noise.mat',path.pow,files.pow,hp,lp),'filt_vars_noise')
+        save(sprintf('%s%s_%d_%d_Hz_Z_standard_noise_%s.mat',path.pow,files.pow,hp,lp,sens_type),'filt_vars_noise')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%
     end
     hp = 1;lp = 150;
-    load(sprintf('%s%s_%d_%d_Hz_Z.mat',path.VEs,files.VEs,hp,lp),'VE')
-    load(sprintf('%s%s_%d_%d_Hz_Z.mat',path.noiseVEs,files.noiseVEs,hp,lp),'VE_noise')
+    load(sprintf('%s%s_%d_%d_Hz_Z_%s.mat',path.VEs,files.VEs,hp,lp,sens_type),'VE')
+    load(sprintf('%s%s_%d_%d_Hz_Z_%s.mat',path.noiseVEs,files.noiseVEs,hp,lp,sens_type),'VE_noise')
     
     N_fs = length(hpfs);
     for f_i = 1:N_fs
@@ -435,15 +452,16 @@ if ~cleaning_only
         VE_f = filtfilt(b,a,VE);
         
         filt_vars= var(VE_f,[],1);clear VE_f
-        save(sprintf('%s%s_%d_%d_Hz_Z.mat',path.pow,files.pow,hp,lp),'filt_vars')
+        save(sprintf('%s%s_%d_%d_Hz_Z_%s.mat',path.pow,files.pow,hp,lp,sens_type),'filt_vars')
         
         VE_noise_f = filtfilt(b,a,VE_noise);
 
         filt_vars_noise= var(VE_noise_f,[],1);
-        save(sprintf('%s%s_%d_%d_Hz_Z_noise.mat',path.pow,files.pow,hp,lp),'filt_vars_noise')
+        save(sprintf('%s%s_%d_%d_Hz_Z_noise_%s.mat',path.pow,files.pow,hp,lp,sens_type),'filt_vars_noise')
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%
         
+    end
     end
 end
 end
