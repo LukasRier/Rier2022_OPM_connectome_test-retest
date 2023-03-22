@@ -1,4 +1,4 @@
-function resting_conn_func(sub,ses,project_dir)
+function resting_conn_func_radial(sub,ses,project_dir,sens_type)
 %% resting_conn_func
 % Estimate AEC functional connectivity for subject sub-[sub] and session
 % ses-[ses] for data saved in [project_dir].
@@ -132,7 +132,7 @@ else
     ch_table = ch_table_;
     data_f = data_f_;
     noise_ch_table = noise_ch_table_;
-    clear ch_table_ noise_ch_table noise_data_f data_f_ noise_ch_table_ noise_data_f_
+    clear ch_table_ noise_data_f data_f_ noise_ch_table_ noise_data_f_ % noise_ch_table
 end
 %% sensor info
 S.sensor_info.pos = [ch_table.Px,ch_table.Py,ch_table.Pz];
@@ -140,11 +140,6 @@ S.sensor_info.ors = [ch_table.Ox,ch_table.Oy,ch_table.Oz];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
-
-%% Mean field correction
-% N = sens_info.ors_used;
-N = S.sensor_info.ors; % orientation matrix (N_sens x 3)
-S.M = eye(length(N)) - N*pinv(N);
 
 %% Epoch data
 % segment using trigger
@@ -285,8 +280,25 @@ clear data_vis_clean
 
 data_f_clean = [data_ica_clean.trial{1,:}];
 clear data_ica_clean
-% apply mean field correction
+
+%%% remove channels for radial only / tangential only etc
+% dual_x = ~ ch_table.isy
+switch sens_type
+    case 'radial'
+        excluded_chans = (ch_table.isx | ch_table.isy);
+    case 'dualy'
+        excluded_chans = ~ch_table.isx;
+    case 'tangential'
+        excluded_chans = ch_table.isz==1;
+end
+S.sensor_info.pos(excluded_chans,:) = [];
+S.sensor_info.ors(excluded_chans,:) = [];
+data_f_clean(excluded_chans,:) = [];
+%% Mean field correction
+% N = sens_info.ors_used;
 disp("Applying mean field correction")
+N = S.sensor_info.ors; % orientation matrix (N_sens x 3)
+S.M = eye(length(N)) - N*pinv(N);
 data_f_clean = S.M*data_f_clean;
 
 %% Further steps:
@@ -321,7 +333,8 @@ for n = 1:Ndips
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% make a plot of the geometry...
-figure(1);
+try
+    figure(1);
 ft_plot_mesh(meshes,'facecolor',[.5 .5 .5],'facealpha',.3,'edgecolor','none')
 hold on
 scatter3(sourcepos(1,:),sourcepos(2,:),sourcepos(3,:),'ro','linewidth',3)
@@ -338,6 +351,7 @@ quiver3(S.sensor_info.pos(ch_table.isz==1,1),S.sensor_info.pos(ch_table.isz==1,2
 plot3(Origin(1),Origin(2),Origin(3),'bo','linewidth',4)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% take a random lead field and plot it...
+
 figure(2);
 ft_plot_mesh(meshes,'facecolor',[.5 .5 .5],'facealpha',.3,'edgecolor','none')
 hold on
@@ -350,13 +364,15 @@ quiver3(S.sensor_info.pos(ch_table.isz==1,1),S.sensor_info.pos(ch_table.isz==1,2
     S.sensor_info.ors(ch_table.isz==1,1).*Lead_fields(ch_table.isz==1,2,16),...
     S.sensor_info.ors(ch_table.isz==1,2).*Lead_fields(ch_table.isz==1,2,16),...
     S.sensor_info.ors(ch_table.isz==1,3).*Lead_fields(ch_table.isz==1,2,16),'r','linewidth',2)
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-clearvars -except path files sub ses epoch_length data_f_clean cleaning_only fs sourcepos Lead_fields N_clean_trls
+clearvars -except path files sub ses epoch_length data_f_clean cleaning_only fs sourcepos Lead_fields N_clean_trls sens_type
 %%
 %% filter the OPM data to band of interest
-if ~cleaning_only
-    hpfs = [4, 8,13,30,35,40];
-    lpfs = [8,12,30,40,45,48];
+hpfs = [4, 8,13,30,35,40,30];
+lpfs = [8,12,30,40,45,48,48];
+    if ~cleaning_only && ~exist(sprintf('%s%s_%d_%d_Hz_Z_%s.mat',path.AEC,files.AEC,hpfs(end),lpfs(end),sens_type),'file')
+
     
     for f_i = 1:length(hpfs)
        
@@ -364,7 +380,7 @@ if ~cleaning_only
         % lp = 30;
         hp = hpfs(f_i);
         lp = lpfs(f_i);
-        if ~exist(sprintf('%s%s_%d_%d_Hz_Z.mat',path.AEC,files.AEC,hp,lp),'file')
+        if ~exist(sprintf('%s%s_%d_%d_Hz_Z_%s.mat',path.AEC,files.AEC,hp,lp,sens_type),'file')
         [b,a] = butter(4,2*[hp lp]/fs);
         data_f = [filtfilt(b,a,data_f_clean')];
         duration = epoch_length*N_clean_trls;
@@ -384,7 +400,7 @@ if ~cleaning_only
             w = (lopt'*Cr_inv/(lopt'*Cr_inv*lopt));
             VE(:,n) = (w*data_f')./sqrt(w*w');
         end
-        save(sprintf('%s%s_%d_%d_Hz_Z.mat',path.VEs,files.VEs,hp,lp),'VE')
+        save(sprintf('%s%s_%d_%d_Hz_Z_%s.mat',path.VEs,files.VEs,hp,lp,sens_type),'VE')
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %% Estimate AEC with pairwise leakage correction
         down_f = 10;
@@ -392,7 +408,7 @@ if ~cleaning_only
         AEC = zeros(Nlocs,Nlocs);
         for seed = 1:Nlocs
             Xsig = squeeze(VE(:,seed));
-            for test = 1:Nlocs
+            parfor test = 1:Nlocs
                 if seed == test
                     AEC(seed,test) = NaN;
                 else
@@ -411,8 +427,8 @@ if ~cleaning_only
                     AEC(seed,test) = corr(H_X_d',H_Y_d');
                 end
             end
-            if seed >1;fprintf(repmat('\b',1,72));end
-            fprintf('Sub: %s | Session: %s | Freq %2d/6 (%3d-%3d Hz) | AEC conn. region %2d\n',sub,ses,f_i,hp,lp,seed);
+            if seed >1;fprintf(repmat('\b',1,71));end
+            fprintf('Sub: %s | Session: %s | Freq %2d/7 (%3d-%3d Hz) | AEC conn. region %2d\n',sub,ses,f_i,hp,lp,seed);
         end
         AEC = 0.5*(AEC + AEC');
         figure()
@@ -421,7 +437,7 @@ if ~cleaning_only
         subplot(122)
         go_netviewer_perctl(AEC,0.95)
         drawnow
-        save(sprintf('%s%s_%d_%d_Hz_Z.mat',path.AEC,files.AEC,hp,lp),'AEC')
+        save(sprintf('%s%s_%d_%d_Hz_Z_%s.mat',path.AEC,files.AEC,hp,lp,sens_type),'AEC')
         end
     end
 end
