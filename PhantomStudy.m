@@ -6,12 +6,12 @@
 % Generate simple sinusoid at 20 Hz and alternate between 2s on 2s off for
 % N trials. Beamform and use 4mm pseudo-T (maybe refine with 1mm??) to find
 % position and orientation of phantom source dipole
-
-f_sample = 600;
-beta_amp = 10e-3; % amplitude in volts
+close all
+f_sample = 4000;
+beta_amp = 1.2e-4; % amplitude in volts
 sin_freq = 23;
 on_dur = 2; %seconds
-off_dur = on_dur;
+off_dur = 2;%on_dur;
 trial_dur = on_dur + off_dur;
 trial_time = linspace(0,trial_dur,f_sample*trial_dur);
 N_trials = 100;
@@ -42,17 +42,19 @@ plot(all_time,outputSignal)
 % setup DAQ
 dq = daq("ni");
 dq.Rate = f_sample;
-addoutput(dq, "cDAQ5Mod1", "ao0", "Voltage");
-addoutput(dq, "cDAQ5Mod1", "ao1", "Voltage");
+daq_name = "cDAQ2Mod1";
+addoutput(dq,daq_name , "ao0", "Voltage");
+addoutput(dq, daq_name, "ao1", "Voltage");
 write(dq, outputSignal)
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  2: faux "movie"/resting state paradigm (Localiser)
+%  2: faux "movie"/resting state paradigm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Generate signal with 1/f characteristic brain noise and pseudo
 % oscillations in the alpha and beta range. Write this signal twice with a
 % break for degaussing and recalibration etc.
+close all
 
 rng(42,'twister')
 
@@ -60,7 +62,7 @@ rng(42,'twister')
 % filter
 % with an approximately 1/f frequency profile.
 exp_length_seconds = 600;
-f_sample = 600;
+f_sample = 4000;
 time_vect = linspace(0,exp_length_seconds,exp_length_seconds*f_sample)';
 
 % the value in poly is the filter root. it can vary between 0 < x < 1 where 0
@@ -69,15 +71,15 @@ time_vect = linspace(0,exp_length_seconds,exp_length_seconds*f_sample)';
 % create the signal
 
 % relative amplitudes
-alpha_amp = 12;
-beta_amp = 6;
+alpha_amp = 155;
+beta_amp = 80;
 brain_noise_amp = 1;
 norm_fac = sqrt(alpha_amp.^2 + beta_amp.^2 + brain_noise_amp.^2);
 
-max_amp = 10e-3; %maximum amplitude in volts
+max_amp = 5e-4; %maximum amplitude in volts
 
 %%%% brain noise
-a = -poly(.952);
+a = -poly(.99);
 w_noise1 = randn(size(time_vect));
 brain_noise = filter(1,a,w_noise1);
 %%%% alpha signal
@@ -105,16 +107,17 @@ outputSignal = (max_amp.*data)./max(data);
 daqreset
 dq = daq("ni");
 dq.Rate = f_sample;
-addoutput(dq, "cDAQ5Mod1", "ao0", "Voltage");
-addoutput(dq, "cDAQ5Mod1", "ao1", "Voltage");
-write(dq, outputSignal)
-
-%%
-fftwin_s = 1;
-[pxx,f] = pwelch(data,fftwin_s*f_sample,[],[],f_sample);
+addoutput(dq,daq_name, "ao0", "Voltage");
+addoutput(dq, daq_name, "ao1", "Voltage");
+% write(dq, [[0;outputSignal],[5;outputSignal*10000]])
+% write(dq, [1e-3.*ones(320000,2)])
 
 %
-tlim = 1;
+fftwin_s = 1;
+[pxx,fxx] = pwelch(data,fftwin_s*f_sample,[],[],f_sample);
+
+%
+tlim = 5;
 figure
 subplot(4,1,1)
 plot(time_vect,brain_noise)
@@ -126,10 +129,10 @@ plot(time_vect,beta_sig)
 xlim([0,tlim])
 
 subplot(4,1,3)
-plot(time_vect,data)
+plot(time_vect,outputSignal.*10000)
 xlim([0,tlim])
 
 
 subplot(4,1,4)
-plot(f,pxx)
+plot(fxx,pxx)
 xlim([0,50])
