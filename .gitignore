@@ -10,3 +10,5 @@ phantom/*_cMEG_Data/*
 *.zip
 *.jpg
 *.db
+phantom/broad_band_phantom_peak.mat
+phantom/beta_phantom_peak.mat
