@@ -400,9 +400,9 @@ if ~cleaning_only
     load(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.VEs,files.VEs,hp,lp),'VE')
     load(sprintf('%s%s_%d_%d_Hz_Z_standard.mat',path.noiseVEs,files.noiseVEs,hp,lp),'VE_noise')
     
-    hpfs = [4, 8,13,30,35,40];
-    lpfs = [8,12,30,40,45,48];
-    
+    hpfs = [4, 8,13,30,35,40,30];
+    lpfs = [8,12,30,40,45,48,48];
+    if ~exist(sprintf('%s%s_%d_%d_Hz_Z_noise.mat',path.pow,files.pow,hpfs(end),lpfs(end)),'file')
     N_fs = length(hpfs);
     for f_i = 1:N_fs
         hp = hpfs(f_i);
@@ -445,5 +445,6 @@ if ~cleaning_only
         %%
         
     end
+end
 end
 end

@@ -354,9 +354,10 @@ quiver3(S.sensor_info.pos(ch_table.isz==1,1),S.sensor_info.pos(ch_table.isz==1,2
 clearvars -except path files sub ses epoch_length data_f_clean cleaning_only fs sourcepos Lead_fields N_clean_trls
 %%
 %% filter the OPM data to band of interest
-if ~cleaning_only
-    hpfs = [4, 8,13,30,35,40];
-    lpfs = [8,12,30,40,45,48];
+    hpfs = [4, 8,13,30,35,40,30];
+    lpfs = [8,12,30,40,45,48,48];
+if ~cleaning_only && ~exist(sprintf('%s%s_%d_%d_Hz_Z.mat',path.AEC,files.AEC,hpfs(end),lpfs(end)),'file')
+
     
     for f_i = 1:length(hpfs)
        
@@ -392,7 +393,7 @@ if ~cleaning_only
         AEC = zeros(Nlocs,Nlocs);
         for seed = 1:Nlocs
             Xsig = squeeze(VE(:,seed));
-            for test = 1:Nlocs
+            parfor test = 1:Nlocs
                 if seed == test
                     AEC(seed,test) = NaN;
                 else
@@ -411,8 +412,8 @@ if ~cleaning_only
                     AEC(seed,test) = corr(H_X_d',H_Y_d');
                 end
             end
-            if seed >1;fprintf(repmat('\b',1,72));end
-            fprintf('Sub: %s | Session: %s | Freq %2d/6 (%3d-%3d Hz) | AEC conn. region %2d\n',sub,ses,f_i,hp,lp,seed);
+            if seed >1;fprintf(repmat('\b',1,71));end
+            fprintf('Sub: %s | Session: %s | Freq %2d/7 (%3d-%3d Hz) | AEC conn. region %2d\n',sub,ses,f_i,hp,lp,seed);
         end
         AEC = 0.5*(AEC + AEC');
         figure()

@@ -4,3 +4,9 @@ fieldtrip-20190212/*
 *.m~
 old_scripts/*
 Copy_of*
+phantom/*_cMEG_Data/*
+*.gif
+*.fig
+*.zip
+*.jpg
+*.db
