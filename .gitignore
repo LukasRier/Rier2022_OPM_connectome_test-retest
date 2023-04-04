@@ -12,3 +12,4 @@ phantom/*_cMEG_Data/*
 *.db
 phantom/broad_band_phantom_peak.mat
 phantom/beta_phantom_peak.mat
+phantom/20230330/*
