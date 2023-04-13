@@ -1,11 +1,12 @@
 clear all
+set(0,'DefaultFigureWindowStyle','normal')
 
 % fname = 'F:\Rdrive\movie\scripts\phantom\20230309_164734_cMEG_Data\20230309_164734_meg.cMEG';phantom_sensor = 'LE';
 fname = 'F:\Rdrive\movie\scripts\phantom\20230330\20230330_160330_cMEG_Data_brainnoise_2xSNR\20230330_160330_meg.cMEG';
 addpath F:\Rdrive\movie\scripts\fieldtrip-20190212
 ft_defaults
 
-res_in_mm = 4; % downsample from 1mm to x mm resolution
+res_in_mm = 5; % downsample from 1mm to x mm resolution
 use_3_dirs = 0; % use 3 direction beamformer instead of 2
 phantom_sensor = 'KF';
 % load data
@@ -416,7 +417,7 @@ for sim_i = 1:N_sim
     im(:,:,1,k) = rgb2ind(f_gif.cdata,map,'nodither');
     k = k + 1;
 end
-imwrite(im,map,'Animation_rand_sim.gif','DelayTime',0.1,'LoopCount',inf)
+imwrite(im,map,'Animation_rand_sim_2xsnr.gif','DelayTime',0.1,'LoopCount',inf)
 %%
 
 % filter data
@@ -497,7 +498,7 @@ arrs = quiver3(px',py',pz',...
     field(:,1),field(:,2),field(:,3),1,'r','LineWidth',2);
 clim(1e3.*[-4    4])
 %%
-for ti = 1:10000
+for ti = 1:100
 %     waitforbuttonpress
     pause(0.01)
 
@@ -784,7 +785,7 @@ end
 set([ax_res, ax_tru],'View',[200,30])
 
 %%
-for ti = 1:100
+for ti = 1:2000
 %     waitforbuttonpress
     pause(0.01)
 
