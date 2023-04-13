@@ -20,7 +20,7 @@ sens_type = 'radial';
 %     for ses_i = 1:2
 %         ses = sprintf('%3d',ses_i);ses(ses == ' ') = '0'
 %         resting_VE_noise_proj_func(sub,ses,project_dir)
-%         resting_VE_noise_proj_func_radial(sub,ses,project_dir,sens_type)
+%         resting_VE_noise_proj_func_chan_subset(sub,ses,project_dir,sens_type)
 %     end
 % end
 %% Estimate functional connectivity
@@ -29,7 +29,7 @@ sens_type = 'radial';
 %     for ses_i = 1:2
 %         ses = sprintf('%3d',ses_i);ses(ses == ' ') = '0'
 %         resting_conn_func(sub,ses,project_dir)
-%         resting_conn_func_radial(sub,ses,project_dir,sens_type)
+%         resting_conn_func_chan_subset(sub,ses,project_dir,sens_type)
 %     end
 % end
 
@@ -41,7 +41,7 @@ sens_type = 'tangential';
 %     for ses_i = 1:2
 %         ses = sprintf('%3d',ses_i);ses(ses == ' ') = '0'
 % %         resting_VE_noise_proj_func(sub,ses,project_dir)
-%         resting_VE_noise_proj_func_radial(sub,ses,project_dir,sens_type)
+%         resting_VE_noise_proj_func_chan_subset(sub,ses,project_dir,sens_type)
 %     end
 % end
 %% Estimate functional connectivity
@@ -50,7 +50,7 @@ for sub_i = 5:10
     for ses_i = 1:2
         ses = sprintf('%3d',ses_i);ses(ses == ' ') = '0'
 %         resting_conn_func(sub,ses,project_dir)
-        resting_conn_func_radial(sub,ses,project_dir,sens_type)
+        resting_conn_func_chan_subset(sub,ses,project_dir,sens_type)
     end
 end
 
@@ -62,7 +62,7 @@ for sub_i =1:10
     for ses_i = 1:2
         ses = sprintf('%3d',ses_i);ses(ses == ' ') = '0'
 %         resting_VE_noise_proj_func(sub,ses,project_dir)
-        resting_VE_noise_proj_func_radial(sub,ses,project_dir,sens_type)
+        resting_VE_noise_proj_func_chan_subset(sub,ses,project_dir,sens_type)
     end
 end
 %% Estimate functional connectivity
@@ -71,6 +71,6 @@ for sub_i = 1:10
     for ses_i = 1:2
         ses = sprintf('%3d',ses_i);ses(ses == ' ') = '0'
 %         resting_conn_func(sub,ses,project_dir)
-        resting_conn_func_radial(sub,ses,project_dir,sens_type)
+        resting_conn_func_chan_subset(sub,ses,project_dir,sens_type)
     end
 end
