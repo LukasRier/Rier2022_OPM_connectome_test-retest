@@ -95,7 +95,7 @@ cfg.headmodel      = headmodel;
 % cfg.resolution     = 0.4;
 cfg.unit           = 'm';
 cfg.grid.pos       = sourcepos.*1;
-cfg.reducerank     = 2;
+cfg.reducerank     = 'no'; %2
 Lead_fields        = ft_prepare_leadfield(cfg);
 
 inside_idx = find(Lead_fields.inside);
