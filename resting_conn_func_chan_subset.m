@@ -1,4 +1,4 @@
-function resting_conn_func_radial(sub,ses,project_dir,sens_type)
+function resting_conn_func_chan_subset(sub,ses,project_dir,sens_type)
 %% resting_conn_func
 % Estimate AEC functional connectivity for subject sub-[sub] and session
 % ses-[ses] for data saved in [project_dir].
