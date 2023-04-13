@@ -1,11 +1,11 @@
 clear all
 
 % fname = 'F:\Rdrive\movie\scripts\phantom\20230309_164734_cMEG_Data\20230309_164734_meg.cMEG';phantom_sensor = 'LE';
-fname = 'F:\Rdrive\movie\scripts\phantom\20230330\20230330_154822_cMEG_Data_brainnoise\20230330_154822_meg.cMEG';
+fname = 'F:\Rdrive\movie\scripts\phantom\20230330\20230330_152653_cMEG_Data_beta\20230330_152653_meg.cMEG';
 addpath F:\Rdrive\movie\scripts\fieldtrip-20190212
 ft_defaults
 
-res_in_mm = 4; % downsample from 1mm to x mm resolution
+res_in_mm = 1; % downsample from 1mm to x mm resolution
 use_3_dirs = 0; % use 3 direction beamformer instead of 2
 phantom_sensor = 'KF';
 % load data
@@ -122,9 +122,15 @@ plot(time,diff_trig)
 % find beginnning
 beginning_samples = find(diff_trig>0.5,N_trials);
 end_samples = find(diff_trig<-0.5,N_trials);
+if length(beginning_samples) ~= length(end_samples)
+    beginning_samples = beginning_samples(1:min([length(beginning_samples),length(end_samples)]));
+    end_samples = end_samples(1:min([length(beginning_samples),length(end_samples)]));
+end
 plot(time(beginning_samples),0.5.*ones(size(beginning_samples)),'ro')
 plot(time(end_samples),-0.5.*ones(size(end_samples)),'bo')
 trl_duration_samps = floor(mean(end_samples - beginning_samples));
+
+
 %%
 %% Make FT data structure
 disp('Making FT structure')
@@ -451,7 +457,7 @@ OPM_data_mfc = S.M*OPM_data_f;
 OPM_data_mfc_100 = S.M*OPM_data_f_100;
 
 
-for ti = 1:720000
+for ti = 1:486000
 % waitforbuttonpress
 corrs(ti) = corr(true_LF,OPM_data_mfc(:,ti));
 end
@@ -510,7 +516,7 @@ arrs = quiver3(px',py',pz',...
 clim(1e3.*[-4    4])
 
 %%
-for ti = 1:10000
+for ti = 1:1000
 %     waitforbuttonpress
     pause(0.01)
 
@@ -526,7 +532,7 @@ for ti = 1:10000
     drawnow
 end
 %%
-for ti = 1:72000
+for ti = 1:486000
     % waitforbuttonpress
 
     field = OPM_data_mfc(isx,ti).*xv + OPM_data_mfc(isy,ti).*yv + OPM_data_mfc(isz,ti).*zv;
@@ -608,14 +614,11 @@ triggers_z = (triggers - mean(triggers))./std(triggers);
 time([1:300,end-300:end])=[];
 VE_z([1:300,end-300:end])=[];
 triggers_z([1:300,end-300:end])=[];
-%
-% figure
-% plot(time,VE_z)
-% hold on
-% plot(time,triggers_z)
-    w = (lopt'*Cr_inv/(lopt'*Cr_inv*lopt));
-    T_stat(n) = ((w*Ca*w') - (w*Cc*w'))./(2*(w*Cc*w'));
-
+%%
+figure
+plot(time,VE_z)
+hold on
+plot(time,triggers_z.*3)
 
 %% plot resulting loc
 ff2 = figure;
@@ -682,7 +685,7 @@ fg0 = figure;
 subplot(2,3,[1 2 4 5])
 ft_plot_mesh(meshes,'facecolor',[.5 .5 .5],'facealpha',.3,'edgecolor','none')
 hold on
-s_plt=scatter3(sourcepos(:,1),sourcepos(:,2),sourcepos(:,3),50,T_stat,'filled');
+s_plt=scatter3(sourcepos(:,1),sourcepos(:,2),sourcepos(:,3),50,pseudoT','filled');
 colormap hot;
 % caxis([cax_val]);
 % % cb = colorbar;cb.Label.String = 'T-stat';
@@ -816,9 +819,9 @@ end
 set([ax_res, ax_tru],'View',[200,30])
 
 %%
-for ti = 1:100
+for ti = 1:100000
 %     waitforbuttonpress
-    pause(0.01)
+    pause(0.001)
 
     h.FaceVertexCData = OPM_data_mfc(isz,ti);
     h.FaceColor = 'interp';h.EdgeColor = 'none';h.FaceAlpha = 0.5;colormap parula
