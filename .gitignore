@@ -13,3 +13,4 @@ phantom/*_cMEG_Data/*
 phantom/broad_band_phantom_peak.mat
 phantom/beta_phantom_peak.mat
 phantom/20230330/*
+phantom/phantomsegmentedmri.mat
