@@ -14,3 +14,5 @@ phantom/broad_band_phantom_peak.mat
 phantom/beta_phantom_peak.mat
 phantom/20230330/*
 phantom/phantomsegmentedmri.mat
+phantom/beta_phantom_peak_4.0_mm.mat
+phantom/beta_phantom_peak_1.0_mm.mat
