@@ -42,7 +42,7 @@ plot(all_time,outputSignal)
 % setup DAQ
 dq = daq("ni");
 dq.Rate = f_sample;
-daq_name = "cDAQ2Mod1";
+daq_name = "cDAQ2Mod1"; % depends on device name
 addoutput(dq,daq_name , "ao0", "Voltage");
 addoutput(dq, daq_name, "ao1", "Voltage");
 write(dq, outputSignal)
@@ -118,21 +118,23 @@ fftwin_s = 1;
 
 %
 tlim = 5;
+
 figure
-subplot(4,1,1)
+tiledlayout('flow')
+nexttile
 plot(time_vect,brain_noise)
 xlim([0,tlim])
 
 
-subplot(4,1,2)
+nexttile
 plot(time_vect,beta_sig)
 xlim([0,tlim])
 
-subplot(4,1,3)
+nexttile
 plot(time_vect,outputSignal.*10000)
 xlim([0,tlim])
 
 
-subplot(4,1,4)
+nexttile
 plot(fxx,pxx)
 xlim([0,50])
