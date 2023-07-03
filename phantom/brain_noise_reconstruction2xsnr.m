@@ -6,7 +6,7 @@ fname = 'F:\Rdrive\movie\scripts\phantom\20230330\20230330_160330_cMEG_Data_brai
 addpath F:\Rdrive\movie\scripts\fieldtrip-20190212
 ft_defaults
 
-res_in_mm = 5; % downsample from 1mm to x mm resolution
+res_in_mm = 8; % downsample from 1mm to x mm resolution
 use_3_dirs = 0; % use 3 direction beamformer instead of 2
 phantom_sensor = 'KF';
 % load data
@@ -213,12 +213,14 @@ Ndips = length(sourcepos);
 outside=[];
 for n = 1:Ndips
     thispos = sourcepos(n,:)';
-    [phi,theta1,r] = cart2sph(thispos(1) - Origin(1),thispos(2) - Origin(2) ,thispos(3) - Origin(3));
+    [phi,theta1,r] = cart2sph(thispos(1) - Origin(1),thispos(2) - Origin(2) ,...
+        thispos(3) - Origin(3));
     theta = pi/2 - theta1;
 
     Src_Or_theta(n,:) = [cos(theta)*cos(phi) cos(theta)*sin(phi) -sin(theta)];
     Src_Or_phi(n,:) = [-sin(phi) cos(phi) 0];
-    Src_Or_R(n,:) = [thispos(1) - Origin(1),thispos(2) - Origin(2) ,thispos(3) - Origin(3)];
+    Src_Or_R(n,:) = [thispos(1) - Origin(1),thispos(2) - Origin(2),...
+        thispos(3) - Origin(3)];
     Src_Or_R(n,:) = Src_Or_R(n,:)./norm(Src_Or_R(n,:));
     %     Src_Or_R(n,:) = [sin(theta)*cos(phi),sin(theta)*sin(phi),cos(theta)];
 
@@ -283,18 +285,27 @@ true_LF = (dipole_ori(1)*lead_fields_shell_dip_xyz(:,1) + ...
     dipole_ori(3)*lead_fields_shell_dip_xyz(:,3))./norm(dipole_ori);
 %% dipole leadfields
 
-[phi,theta1,r] = cart2sph(dipole_pos(1) - Origin(1),dipole_pos(2) - Origin(2) ,dipole_pos(3) - Origin(3));
+[phi,theta1,r] = cart2sph(dipole_pos(1) - Origin(1),dipole_pos(2) - Origin(2),...
+    dipole_pos(3) - Origin(3));
 theta = pi/2 - theta1;
 
 Src_Or_theta_dip = [cos(theta)*cos(phi) cos(theta)*sin(phi) -sin(theta)];
 Src_Or_phi_dip = [-sin(phi) cos(phi) 0];
-Src_Or_R_dip = [dipole_pos(1) - Origin(1),dipole_pos(2) - Origin(2) ,dipole_pos(3) - Origin(3)];
+Src_Or_R_dip = [dipole_pos(1) - Origin(1),dipole_pos(2) - Origin(2),...
+    dipole_pos(3) - Origin(3)];
 Src_Or_R_dip = Src_Or_R_dip./norm(Src_Or_R_dip);
-%     Src_Or_R(n,:) = [sin(theta)*cos(phi),sin(theta)*sin(phi),cos(theta)];
 
-Lead_fields_dip(:,1) = Src_Or_theta_dip(1)*lead_fields_shell_dip_xyz(:,1) + Src_Or_theta_dip(2)*lead_fields_shell_dip_xyz(:,2) + Src_Or_theta_dip(3)*lead_fields_shell_dip_xyz(:,3);
-Lead_fields_dip(:,2) = Src_Or_phi_dip(1)*lead_fields_shell_dip_xyz(:,1) + Src_Or_phi_dip(2)*lead_fields_shell_dip_xyz(:,2) + Src_Or_phi_dip(3)*lead_fields_shell_dip_xyz(:,3);
-Lead_fields_dip(:,3) = Src_Or_R_dip(1)*lead_fields_shell_dip_xyz(:,1) + Src_Or_R_dip(2)*lead_fields_shell_dip_xyz(:,2) + Src_Or_R_dip(3)*lead_fields_shell_dip_xyz(:,3);
+Lead_fields_dip(:,1) = Src_Or_theta_dip(1)*lead_fields_shell_dip_xyz(:,1) + ...
+    Src_Or_theta_dip(2)*lead_fields_shell_dip_xyz(:,2) + ...
+    Src_Or_theta_dip(3)*lead_fields_shell_dip_xyz(:,3);
+
+Lead_fields_dip(:,2) = Src_Or_phi_dip(1)*lead_fields_shell_dip_xyz(:,1) + ...
+    Src_Or_phi_dip(2)*lead_fields_shell_dip_xyz(:,2) + ...
+    Src_Or_phi_dip(3)*lead_fields_shell_dip_xyz(:,3);
+
+Lead_fields_dip(:,3) = Src_Or_R_dip(1)*lead_fields_shell_dip_xyz(:,1) + ...
+    Src_Or_R_dip(2)*lead_fields_shell_dip_xyz(:,2) + ...
+    Src_Or_R_dip(3)*lead_fields_shell_dip_xyz(:,3);
 
 figure
 set(gcf,'Name','GT Leadfields Z channels')
