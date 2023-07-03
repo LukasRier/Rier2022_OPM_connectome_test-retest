@@ -198,8 +198,8 @@ cfg.downsample = res_in_mm;
 [sourcepos_vox(:,1),sourcepos_vox(:,2),sourcepos_vox(:,3)] = ind2sub(downsample.dim, find(ones(size(downsample.anatomy))));
 sourcepos = ft_warp_apply(downsample.transform,sourcepos_vox);
 if cfg.downsample == 1
-within_sphere = (sqrt(sum((sourcepos - dipole_pos).^2,2)) < 35/1000);
-sourcepos(~within_sphere,:) = [];
+    within_sphere = (sqrt(sum((sourcepos - dipole_pos).^2,2)) < 35/1000);
+    sourcepos(~within_sphere,:) = [];
 end
 S.mri_file = 'F:\Rdrive\movie\scripts\phantom\\MNI152_T1_1mm.nii';
 addpath F:\Rdrive\movie\scripts\Beamformer
@@ -227,8 +227,8 @@ for n = 1:Ndips
 
     Lead_fields(:,1,n) = Src_Or_theta(n,1)*lead_fields_shell_xyz(:,1,n) + Src_Or_theta(n,2)*lead_fields_shell_xyz(:,2,n) + Src_Or_theta(n,3)*lead_fields_shell_xyz(:,3,n);
     Lead_fields(:,2,n) = Src_Or_phi(n,1)*lead_fields_shell_xyz(:,1,n) + Src_Or_phi(n,2)*lead_fields_shell_xyz(:,2,n) + Src_Or_phi(n,3)*lead_fields_shell_xyz(:,3,n);
-    
-    if use_3_dirs 
+
+    if use_3_dirs
         Lead_fields(:,3,n) = Src_Or_R(n,1)*lead_fields_shell_xyz(:,1,n) + Src_Or_R(n,2)*lead_fields_shell_xyz(:,2,n) + Src_Or_R(n,3)*lead_fields_shell_xyz(:,3,n);
     end
     if all(Lead_fields(:,:,n) == zeros(size(Lead_fields(:,:,n))),'all')
@@ -387,16 +387,16 @@ h.Visible = "on";set([qx,qy,qz],'Visible',0);
 % clear rand_oris
 % [rand_oris(:,1), rand_oris(:,2), rand_oris(:,3)] = sph2cart(rand_oris_sph(:,1),...
 %     rand_oris_sph(:,2),rand_oris_sph(:,3));
-% 
+%
 % plot3(rand_locs(:,1),rand_locs(:,2),rand_locs(:,3),'kx','MarkerSize',2);
 % quiver3(rand_locs(:,1),rand_locs(:,2),rand_locs(:,3),...
 %     rand_oris(:,1),rand_oris(:,2),rand_oris(:,3),3,'k','LineWidth',1.5);
 % h_dip_pos.MarkerSize =1;
-% 
+%
 % % simulate LFs from random locs and oris
 % [bf_outs_rand] = Copy_of_run_beamformer('shell',rand_locs,S,0,[],1);
 % lead_fields_shell_rand_xyz = bf_outs_rand.LF;
-% 
+%
 % fCount=71;
 % figure(ff)
 % f_gif = getframe(ff);
@@ -411,7 +411,7 @@ h.Visible = "on";set([qx,qy,qz],'Visible',0);
 %         xv = [ch_table.Ox(x_ch), ch_table.Oy(x_ch), ch_table.Oz(x_ch)];
 %         yv = [ch_table.Ox(y_ch), ch_table.Oy(y_ch), ch_table.Oz(y_ch)];
 %         zv = [ch_table.Ox(z_ch), ch_table.Oy(z_ch), ch_table.Oz(z_ch)];
-% 
+%
 %         rand_LF = (rand_oris(sim_i,1)*lead_fields_shell_rand_xyz(:,1,sim_i) + ...
 %             rand_oris(sim_i,2)*lead_fields_shell_rand_xyz(:,2,sim_i) + ...
 %             rand_oris(sim_i,3)*lead_fields_shell_rand_xyz(:,3,sim_i))./norm(rand_oris(sim_i,:));
@@ -423,7 +423,7 @@ h.Visible = "on";set([qx,qy,qz],'Visible',0);
 %     arrs_unc(sl_i,sim_i) = quiver3(px',py',pz',...
 %         LF_mags(:,1),LF_mags(:,2),LF_mags(:,3),1,'k');
 %     sim_similarity(sim_i) = abs(pdist2(LF_mags(:)',LF_mags_true(:)','cosine') -1);
-% 
+%
 %     drawnow
 %     f_gif = getframe(ff);
 %     im(:,:,1,k) = rgb2ind(f_gif.cdata,map,'nodither');
@@ -434,17 +434,20 @@ h.Visible = "on";set([qx,qy,qz],'Visible',0);
 
 % filter data
 OPM_data_f = OPM_data;
+triggers_f = triggers;
 for harms = [50,100,150,200]
     Wo = harms/(f/2);  BW = Wo/35;
     [b,a] = iirnotch(Wo,BW);
     disp(['Applying Notch filter:',num2str(harms)])
     OPM_data_f = filter(b,a,OPM_data_f',[],1)';
+    triggers_f = filter(b,a,triggers_f',[],1)';
 end
 
 hp = 1;
 lp = 100;
 [b,a] = butter(4,2*[hp lp]/f);
 OPM_data_f = [filtfilt(b,a,OPM_data_f')]';
+triggers_f = [filtfilt(b,a,triggers_f')]';
 
 % apply mean field correction
 disp("Applying mean field correction")
@@ -453,8 +456,8 @@ OPM_data_mfc = S.M*OPM_data_f;
 %
 %
 for ti = 1:720000
-% waitforbuttonpress
-corrs(ti) = corr(true_LF,OPM_data_mfc(:,ti));
+    % waitforbuttonpress
+    corrs(ti) = corr(true_LF,OPM_data_mfc(:,ti));
 end
 
 figure
@@ -499,6 +502,8 @@ arr_true.LineWidth = 3;arr_true.Color = 'k';
 
 sgtitle('"Ground truth" pos/ori and data fieldmap')
 
+% Field vectors for single timepoint
+
 ti=1;
 h=trisurf(DT,S.sensor_info.pos(isz,1),S.sensor_info.pos(isz,2),S.sensor_info.pos(isz,3),(OPM_data_mfc(isz,ti)));
 h.FaceColor = 'interp';h.EdgeColor = 'none';h.FaceAlpha = 0.5;colormap parula
@@ -509,24 +514,9 @@ field = OPM_data_mfc(isx,ti).*xv + OPM_data_mfc(isy,ti).*yv + OPM_data_mfc(isz,t
 arrs = quiver3(px',py',pz',...
     field(:,1),field(:,2),field(:,3),1,'r','LineWidth',2);
 clim(1e3.*[-4    4])
-%%
-    for ti = 1:100
-    %     waitforbuttonpress
-        pause(0.01)
-    
-        h.FaceVertexCData = OPM_data_mfc(isz,ti);
-        h.FaceColor = 'interp';h.EdgeColor = 'none';h.FaceAlpha = 0.5;colormap parula
-    
-        view([90+180.*sind(mod(1*ti,180)) 30])
-    
-        field = OPM_data_mfc(isx,ti).*xv + OPM_data_mfc(isy,ti).*yv + OPM_data_mfc(isz,ti).*zv;
-        arrs.UData = -field(:,1);
-        arrs.VData = -field(:,2);
-        arrs.WData = -field(:,3);
-        drawnow
-    end
-%%
-for ti = 1:72000
+
+%% similarity between GT and field at each timepoint
+for ti = 1:size(OPM_data_mfc, 2)
     % waitforbuttonpress
 
     field = OPM_data_mfc(isx,ti).*xv + OPM_data_mfc(isy,ti).*yv + OPM_data_mfc(isz,ti).*zv;
@@ -534,70 +524,109 @@ for ti = 1:72000
 end
 %%
 figure
-histogram(abs(similarity),'Normalization','probability')
+histogram(abs(similarity),'Normalization','cdf')
 hold on
-% histogram(abs(sim_similarity),'Normalization','probability')
 legend('Field data over time')
 xlabel("|Cosine similarity|")
-ylabel('A.U')
+ylabel('CDF')
 set(gcf,'Color','w')
 %%
+N_folds = 6;
+size(OPM_data_mfc,2)./N_folds;
 
-C = cov(OPM_data_mfc');
-mu = 0.05;
-Cr = C + mu*max(svd(C))*eye(size(C));
-Cr_inv = inv(Cr);
-Z = zeros(Ndips,1)
-for n = 1:Ndips
+Z = zeros(Ndips,N_folds);
+for f_ind = 1:N_folds
+    win(f_ind,:) = (1 + (f_ind - 1) * size(OPM_data_mfc, 2) / N_folds) : (f_ind * size(OPM_data_mfc, 2) / N_folds);
+    fold_data = OPM_data_mfc(:,win(f_ind,:));
+    triggers_f_fold = triggers_f(win(f_ind,:));
+    C = cov(fold_data');
+    mu = 0.05;
+    Cr = C + mu*max(svd(C))*eye(size(C));
+    Cr_inv = inv(Cr);
+    for n = 1:Ndips
+        this_L = Lead_fields(:,:,n);
+
+        iPower_v = this_L'*Cr_inv*this_L;
+        [v,d] = svd(iPower_v);
+        [~,id] = min(diag(d));
+        lopt = this_L*v(:,id); % turn to nAm amplitude
+        w = (lopt'*Cr_inv/(lopt'*Cr_inv*lopt));
+        Z(n,f_ind) = (w*Cr*w')./(w*w');
+    end
+    % find max and calculate VE
+    n = find(Z(:,f_ind)==max(Z(:,f_ind)));
+    peak_pos(f_ind,:) = sourcepos(n,:);
+    peak_or_theta(f_ind,:) = Src_Or_theta(n,:)./100;
+    peak_or_phi(f_ind,:) = Src_Or_phi(n,:)./100;
+    peak_or_R(f_ind,:) = Src_Or_R(n,:)./100;
+    % ROT = [peak_or_theta;peak_or_phi;peak_or_R]';
+    % ROT = [peak_or_theta;peak_or_phi;peak_or_R]';
     this_L = Lead_fields(:,:,n);
+    % this_L = lead_fields_shell_xyz(:,:,n);
 
     iPower_v = this_L'*Cr_inv*this_L;
     [v,d] = svd(iPower_v);
     [~,id] = min(diag(d));
     lopt = this_L*v(:,id); % turn to nAm amplitude
     w = (lopt'*Cr_inv/(lopt'*Cr_inv*lopt));
-    Z(n) = (w*Cr*w')./(w*w');
+    if size(v,1) == 3
+        peak_ori = (peak_or_theta.*v(1,id) + peak_or_phi.*v(2,id) + peak_or_R.*v(3,id));
+    else
+        peak_ori = (peak_or_theta.*v(1,id) + peak_or_phi.*v(2,id));
+    end
+    % peak_ori = ROT*v(id,:)';
+
+    VE = (w*fold_data)./sqrt(w*w');
+    VE_z = -(VE - mean(VE))./std(VE);
+    % VE_z = -(VE./(std((VE))));
+
+    triggers_z = (triggers_f_fold - mean(triggers_f_fold))./std(triggers_f_fold);
+    % triggers_z = triggers;
+
+    % time([1:300,end-300:end])=[];
+    VE_z([1:300,end-300:end])=[];
+    triggers_z([1:300,end-300:end])=[];
+    %
+    % figure
+    % plot(time,VE_z)
+    % hold on
+    % plot(time,triggers_z)
+
+    fftwin_s = 1;
+    [pxx_VE(:,f_ind),~] = pwelch(VE_z,fftwin_s*f,[],[],f);
+    [pxx_trig(:,f_ind),fxx] = pwelch(triggers_z,fftwin_s*f,[],[],f);
+    spec_rms_diff(f_ind) = sqrt(mean((pxx_VE(:,f_ind) - pxx_trig(:,f_ind)).^2));
+
+    figure
+    plot(fxx,pxx_VE(:,f_ind))
+    hold on
+    plot(fxx,pxx_trig(:,f_ind))
+    legend('VE', 'Trigger signal')
+    xlim([0,60])
+
+    similiarity_folds(f_ind) = mean(abs(similarity(win(f_ind,:))));
+
+    fftwin_s = 10;
+    % [coh(:,f_ind), fxx]  = mscohere(VE_z,triggers_z,fftwin_s*f,[],[],f);
+    [coh(:,f_ind), fxx]  = mscohere(VE_z,triggers_z,[],[],[],f);
+    figure
+    plot(fxx,coh(:,f_ind))
+    xlim([0,60])
+
 end
-% find max and calculate VE
-n = find(Z==max(Z));
-peak_pos = sourcepos(n,:);
-peak_or_theta = Src_Or_theta(n,:)./100;
-peak_or_phi = Src_Or_phi(n,:)./100;
-peak_or_R = Src_Or_R(n,:)./100;
-% ROT = [peak_or_theta;peak_or_phi;peak_or_R]';
-% ROT = [peak_or_theta;peak_or_phi;peak_or_R]';
-this_L = Lead_fields(:,:,n);
-% this_L = lead_fields_shell_xyz(:,:,n);
 
-iPower_v = this_L'*Cr_inv*this_L;
-[v,d] = svd(iPower_v);
-[~,id] = min(diag(d));
-lopt = this_L*v(:,id); % turn to nAm amplitude
-w = (lopt'*Cr_inv/(lopt'*Cr_inv*lopt));
-if size(v,1) == 3
-peak_ori = (peak_or_theta.*v(1,id) + peak_or_phi.*v(2,id) + peak_or_R.*v(3,id));
-else
-    peak_ori = (peak_or_theta.*v(1,id) + peak_or_phi.*v(2,id));
-end
-% peak_ori = ROT*v(id,:)';
+fprintf('RMS Spectral difference (VE vs TRIG) = %1.5f +/- %1.5f (AU)\n',mean(spec_rms_diff),std(spec_rms_diff));
+fprintf('|Cosine Similarity| = %1.5f +/- %1.5f\n',mean(similiarity_folds),std(similiarity_folds));
 
-VE = (w*OPM_data_mfc)./sqrt(w*w');
-VE_z = -(VE - mean(VE))./std(VE);
-% VE_z = -(VE./(std((VE))));
+figure
+ci_coh = prctile(coh, [25, 75, 50],2);
+plot(fxx,median(coh,2),'Color','k','LineWidth',2,'DisplayName','Coherence')
+hold on
+ciplot(ci_coh(:,1),ci_coh(:,2),fxx,[0,0,0]);
+xlim([0,60])
 
-triggers_z = (triggers - mean(triggers))./std(triggers);
-% triggers_z = triggers;
-
-time([1:300,end-300:end])=[];
-VE_z([1:300,end-300:end])=[];
-triggers_z([1:300,end-300:end])=[];
-%
-% figure
-% plot(time,VE_z)
-% hold on
-% plot(time,triggers_z)
-
-
+xlabel('Frequency (Hz)')
+ylabel('$|COH|^2$')
 %% plot resulting loc
 ff2 = figure;
 load meshes.mat
@@ -640,18 +669,18 @@ h.Visible = 0;
 
 a2 = subplot(122);
 
-plot3(peak_pos(1),peak_pos(2),peak_pos(3),'b*','LineWidth',2,'MarkerSize',20,'MarkerFaceColor','b')
-arr_opt = quiver3(peak_pos(1),peak_pos(2),peak_pos(3),...
-    peak_ori(1),peak_ori(2),peak_ori(3),2);
+plot3(peak_pos(f_ind,1),peak_pos(f_ind,2),peak_pos(f_ind,3),'b*','LineWidth',2,'MarkerSize',20,'MarkerFaceColor','b')
+arr_opt = quiver3(peak_pos(f_ind,1),peak_pos(f_ind,2),peak_pos(f_ind,3),...
+    peak_ori(f_ind,1),peak_ori(f_ind,2),peak_ori(f_ind,3),2);
 arr_opt.LineWidth = 3;arr_opt.Color = 'b';
-quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_theta(1), peak_or_theta(2), peak_or_theta(3),2,'r')
-quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_phi(1), peak_or_phi(2), peak_or_phi(3),2,'g')
-quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_R(1), peak_or_R(2), peak_or_R(3),2,'b')
+quiver3(peak_pos(f_ind,1),peak_pos(f_ind,2),peak_pos(f_ind,3),peak_or_theta(f_ind,1), peak_or_theta(f_ind,2), peak_or_theta(f_ind,3),2,'r')
+quiver3(peak_pos(f_ind,1),peak_pos(f_ind,2),peak_pos(f_ind,3),peak_or_phi(f_ind,1), peak_or_phi(f_ind,2), peak_or_phi(f_ind,3),2,'g')
+quiver3(peak_pos(f_ind,1),peak_pos(f_ind,2),peak_pos(f_ind,3),peak_or_R(f_ind,1), peak_or_R(f_ind,2), peak_or_R(f_ind,3),2,'b')
 
-dist_in_mm = sqrt(sum((peak_pos - dipole_pos).^2))*1000;
+dist_in_mm = sqrt(sum((peak_pos - dipole_pos).^2,2))*1000;
 
 res = sqrt(sum((sourcepos(1,:) -  sourcepos(2,:)).^2))*1000;
-fprintf('Peak to truth distance = %1.3f mm (%1.1f mm res)\n',dist_in_mm,res);
+fprintf('Peak to truth distance = %1.3f +/- %1.3f mm (%1.1f mm res)\n',mean(dist_in_mm),std(dist_in_mm),res);
 %%
 h2=trisurf(DT,S.sensor_info.pos(isz,1),S.sensor_info.pos(isz,2),...
     S.sensor_info.pos(isz,3),lopt(isz));
@@ -663,7 +692,7 @@ fg0 = figure;
 subplot(2,3,[1 2 4 5])
 ft_plot_mesh(meshes,'facecolor',[.5 .5 .5],'facealpha',.3,'edgecolor','none')
 hold on
-s_plt=scatter3(sourcepos(:,1),sourcepos(:,2),sourcepos(:,3),50,Z,'filled');
+s_plt=scatter3(sourcepos(:,1),sourcepos(:,2),sourcepos(:,3),50,mean(Z,2),'filled');
 colormap hot;
 % caxis([cax_val]);
 % % cb = colorbar;cb.Label.String = 'Zstat';
@@ -687,12 +716,12 @@ arr_true = quiver3(dipole_pos(1),dipole_pos(2),dipole_pos(3),...
     dipole_ori(1),dipole_ori(2),dipole_ori(3),3);
 arr_true.LineWidth = 3;arr_true.Color = 'k';
 
-plot3(peak_pos(1),peak_pos(2),peak_pos(3),'b*','LineWidth',2,'MarkerSize',20,'MarkerFaceColor','b')
-arr_opt = quiver3(peak_pos(1),peak_pos(2),peak_pos(3),...
-    peak_ori(1),peak_ori(2),peak_ori(3),4);
+plot3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),'b*','LineWidth',2,'MarkerSize',20,'MarkerFaceColor','b')
+arr_opt = quiver3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),...
+    peak_ori(:,1),peak_ori(:,2),peak_ori(:,3),4);
 arr_opt.LineWidth = 3;arr_opt.Color = 'b';
 
-%% 
+%%
 %close(f_compare)
 f_compare = figure;
 f_compare.Color = 'w';
@@ -734,18 +763,18 @@ h.Visible = 0;
 
 subplot(ax_tru);
 
-plot3(peak_pos(1),peak_pos(2),peak_pos(3),'b*','LineWidth',2,'MarkerSize',20,'MarkerFaceColor','b')
-arr_opt = quiver3(peak_pos(1),peak_pos(2),peak_pos(3),...
-    peak_ori(1),peak_ori(2),peak_ori(3),2);
+plot3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),'b*','LineWidth',2,'MarkerSize',20,'MarkerFaceColor','b')
+arr_opt = quiver3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),...
+    peak_ori(:,1),peak_ori(:,2),peak_ori(:,3),2);
 arr_opt.LineWidth = 3;arr_opt.Color = 'b';
-quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_theta(1), peak_or_theta(2), peak_or_theta(3),2,'r')
-quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_phi(1), peak_or_phi(2), peak_or_phi(3),2,'g')
-quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_R(1), peak_or_R(2), peak_or_R(3),2,'b')
+quiver3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),peak_or_theta(:,1), peak_or_theta(:,2), peak_or_theta(:,3),2,'r')
+quiver3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),peak_or_phi(:,1), peak_or_phi(:,2), peak_or_phi(:,3),2,'g')
+quiver3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),peak_or_R(:,1), peak_or_R(:,2), peak_or_R(:,3),2,'b')
 
-dist_in_mm = sqrt(sum((peak_pos - dipole_pos).^2))*1000;
+dist_in_mm = sqrt(sum((peak_pos - dipole_pos).^2,2))*1000;
 
 res = sqrt(sum((sourcepos(1,:) -  sourcepos(2,:)).^2))*1000;
-fprintf('Peak to truth distance = %1.3f mm (%1.1f mm res)\n',dist_in_mm,res);
+fprintf('Peak to truth distance = %1.3f +/- %1.3f mm (%1.1f mm res)\n',mean(dist_in_mm),std(dist_in_mm),res);
 
 
 view([200,30])
@@ -790,25 +819,8 @@ ax_res.XLim = ax_tru.XLim;
 ax_res.YLim = ax_tru.YLim;
 ax_res.ZLim = ax_tru.ZLim;
 %
-for vi = 1:3
-set([ax_res, ax_tru],'View',views(vi,:))
-input('next')
-end
+% for vi = 1:3
+% set([ax_res, ax_tru],'View',views(vi,:))
+% input('next')
+% end
 set([ax_res, ax_tru],'View',[200,30])
-
-%%
-for ti = 1:2000
-%     waitforbuttonpress
-    pause(0.01)
-
-    h.FaceVertexCData = OPM_data_mfc(isz,ti);
-    h.FaceColor = 'interp';h.EdgeColor = 'none';h.FaceAlpha = 0.5;colormap parula
-
-    view([90+180.*sind(mod(1*ti,180)) 30])
-
-    field = OPM_data_mfc(isx,ti).*xv + OPM_data_mfc(isy,ti).*yv + OPM_data_mfc(isz,ti).*zv;
-    arrs.UData = -field(:,1);
-    arrs.VData = -field(:,2);
-    arrs.WData = -field(:,3);
-    drawnow
-end
