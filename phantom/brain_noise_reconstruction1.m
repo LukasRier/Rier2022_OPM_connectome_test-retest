@@ -111,7 +111,7 @@ duration = 600 ;%s
 OPM_data = OPM_data(:,beginning_sample+1:beginning_sample+duration*f);
 triggers = triggers(1,beginning_sample+1:beginning_sample+duration*f);
 time = time(beginning_sample+1:beginning_sample+duration*f);time=time-time(1);
-
+time_tot = time;
 figure
 
 plot(time,triggers);
@@ -364,7 +364,7 @@ set(arrs,'LineWidth',2,'Color','b','AutoScaleFactor',2e12);
 h.Visible = "on";set([qx,qy,qz],'Visible',0);
 
 % random error in pos and source angle
-N_sim = 500;
+N_sim = 50;
 sd_ang = 10; % degree
 sd_loc = 5/1000; % m
 rand_locs = dipole_pos +  sd_loc.*randn(N_sim,3);
@@ -390,6 +390,7 @@ f_gif = getframe(ff);
 [im,map] = rgb2ind(f_gif.cdata,256,'nodither');
 im(1,1,1,fCount) = 0;
 k = 1;
+LF_mags_all=[];
 for sim_i = 1:N_sim
     for sl_i = 1:length(slots_in_use)
         x_ch = (ch_table.slot_no == slots_in_use(sl_i)) & isx;
@@ -406,17 +407,46 @@ for sim_i = 1:N_sim
         px(sl_i) = ch_table.Px(x_ch);
         py(sl_i) = ch_table.Py(x_ch);
         pz(sl_i) = ch_table.Pz(x_ch);
+        LF_mags_all(sl_i,:,sim_i) = LF_mags(sl_i,:);
     end
     arrs_unc(sl_i,sim_i) = quiver3(px',py',pz',...
         LF_mags(:,1),LF_mags(:,2),LF_mags(:,3),1,'k');
     sim_similarity(sim_i) = abs(pdist2(LF_mags(:)',LF_mags_true(:)','cosine') -1);
-
     drawnow
-    f_gif = getframe(ff);
-    im(:,:,1,k) = rgb2ind(f_gif.cdata,map,'nodither');
-    k = k + 1;
+%     f_gif = getframe(ff);
+%     im(:,:,1,k) = rgb2ind(f_gif.cdata,map,'nodither');
+%     k = k + 1;
 end
-imwrite(im,map,'Animation_rand_sim.gif','DelayTime',0.1,'LoopCount',inf)
+% imwrite(im,map,'Animation_rand_sim.gif','DelayTime',0.1,'LoopCount',inf)
+
+%%
+delete(arrs)
+LF_mags_mean = mean(LF_mags_all,3)
+% quiver3(px',py',pz',...
+%         LF_mags_mean(:,1),LF_mags_mean(:,2),LF_mags_mean(:,3),3,'g');
+
+for sl_i=1:length(slots_in_use)
+    [azimuth,elevation,r_v] = cart2sph(squeeze(LF_mags_all(sl_i,1,:)),squeeze(LF_mags_all(sl_i,2,:)),squeeze(LF_mags_all(sl_i,3,:)));
+   
+cone_h = mean(r_v)*3*10^12;
+
+ax2 = abs(cone_h.*(std(sin(azimuth))/std(cos(azimuth))))
+ax1 = abs(cone_h.*(std(sin(elevation))/std(cos(elevation))))
+
+ell_cone_f = @(x,y,z) (1/ax1.^2).*(x).^2 + (1/ax2.^2).*(y).^2 - (1/cone_h.^2).*(z).^2;
+cone_fh(sl_i) = fimplicit3(ell_cone_f,[-ax1 ax1 -ax2 ax2 0 cone_h]);
+cone_fh(sl_i).EdgeColor = "none";
+%
+ R=fcn_RotationFromTwoVectors([0,0,1], LF_mags_mean(sl_i,:)./norm(LF_mags_mean(sl_i,:)));
+%
+M=makehgtform('translate',[px(sl_i),py(sl_i),pz(sl_i)]);
+M(1:3,1:3) = R;
+t(sl_i) = hgtransform('Parent',gca);
+set(cone_fh(sl_i),'Parent',t(sl_i))
+set(t(sl_i),'Matrix',M);
+end
+set(cone_fh,'FaceColor','k','FaceAlpha',0.5);
+
 %%
 
 % filter data
@@ -574,7 +604,6 @@ VE_z = -(VE - mean(VE))./std(VE);
 
 triggers_z = (triggers - mean(triggers))./std(triggers);
 % triggers_z = triggers;
-
 time([1:300,end-300:end])=[];
 VE_z([1:300,end-300:end])=[];
 triggers_z([1:300,end-300:end])=[];
@@ -682,9 +711,14 @@ arr_opt.LineWidth = 3;arr_opt.Color = 'b';
 %% 
 %close(f_compare)
 f_compare = figure;
+
 f_compare.Color = 'w';
+f_compare.Units = 'normalized';
+f_compare.Position = [0    0.0278    1.0000    0.9009];
+f_compare.Units = 'pixels';
+
 ax_tru = subplot(122);
-ft_plot_mesh(meshes,'facecolor',[.5 .5 .5],'facealpha',.3,'edgecolor','none')
+ft_plot_mesh(meshes(2),'facecolor',[.5 .5 .5],'facealpha',.3,'edgecolor','none')
 hold on
 view([200,30])
 
@@ -697,8 +731,9 @@ arr_phantom_ax.LineWidth = 2;arr_phantom_ax.Color = 'k';arr_phantom_ax.LineStyle
 h_dip_pos = plot3(dipole_pos(1),dipole_pos(2),dipole_pos(3),'go','MarkerSize',10,...
     'MarkerFaceColor','k');
 arr_true = quiver3(dipole_pos(1),dipole_pos(2),dipole_pos(3),...
-    dipole_ori(1),dipole_ori(2),dipole_ori(3),3);
-arr_true.LineWidth = 3;arr_true.Color = 'k';
+    dipole_ori(1),dipole_ori(2),dipole_ori(3),2.5);
+arr_true.LineWidth = 3;arr_true.Color = [1,1,1].*0.2;
+arr_true.LineStyle = "-.";
 
 field_mag = true_LF(isz);
 DT= boundary(S.sensor_info.pos(isz,1),S.sensor_info.pos(isz,2),S.sensor_info.pos(isz,3),0);
@@ -712,22 +747,56 @@ ax_res.CameraViewAngleMode = 'manual';
 axis off
 axis equal
 view([200,30])
+
 copyobj(ax_tru.Children,ax_res);
 clim([-1,1].*5e-15);%colormap hot
 
 
+%
+
 hold on
 h.Visible = 0;
+isz = endsWith(ch_table.name,'Z');
+isx = endsWith(ch_table.name,'X');
+isy = endsWith(ch_table.name,'Y');
+
+field_lf = -(true_LF(isx).*xv + true_LF(isy).*yv + true_LF(isz).*zv);
+
+arrs_lf = quiver3(px',py',pz',...
+    field_lf(:,1),field_lf(:,2),field_lf(:,3),1,'b','LineWidth',2);
 
 subplot(ax_tru);
 
-plot3(peak_pos(1),peak_pos(2),peak_pos(3),'b*','LineWidth',2,'MarkerSize',20,'MarkerFaceColor','b')
+%%%% axis directions
+offset=0.03;
+cross_pos = [ax_tru.XLim(1)-offset,ax_tru.YLim(2)+offset,ax_tru.ZLim(1)-offset];
+% plot3([cross_pos(1),cross_pos(1)],[cross_pos(2),cross_pos(2)-0.05],[cross_pos(3),cross_pos(3)],'g','LineWidth',2)
+% plot3([cross_pos(1),cross_pos(1)+0.05],[cross_pos(2),cross_pos(2)],[cross_pos(3),cross_pos(3)],'r','LineWidth',2)
+% plot3([cross_pos(1),cross_pos(1)],[cross_pos(2),cross_pos(2)],[cross_pos(3),cross_pos(3)+0.05],'b','LineWidth',2)
+
+quiver3([cross_pos(1)],[cross_pos(2)],[cross_pos(3)],...
+    [cross_pos(1)-cross_pos(1)],[cross_pos(2)-cross_pos(2)-0.05],[cross_pos(3)-cross_pos(3)],...
+    'g','LineWidth',2,'MaxHeadSize',0.7)
+quiver3([cross_pos(1)],[cross_pos(2)],[cross_pos(3)],...
+    [cross_pos(1)-cross_pos(1)+0.05],[cross_pos(2)-cross_pos(2)],[cross_pos(3)-cross_pos(3)],...
+    'r','LineWidth',2,'MaxHeadSize',0.7)
+quiver3([cross_pos(1)],[cross_pos(2)],[cross_pos(3)],...
+    [cross_pos(1)-cross_pos(1)],[cross_pos(2)-cross_pos(2)],[cross_pos(3)-cross_pos(3)+0.05]...
+    ,'b','LineWidth',2,'MaxHeadSize',0.7)
+
+
+text(cross_pos(1)+0.06,cross_pos(2),cross_pos(3),'R')
+text(cross_pos(1),cross_pos(2)-0.06,cross_pos(3),'P')
+text(cross_pos(1),cross_pos(2),cross_pos(3)+0.06,'S')
+
+
+plot3(peak_pos(1),peak_pos(2),peak_pos(3),'k*','LineWidth',2,'MarkerSize',20,'MarkerFaceColor','b')
 arr_opt = quiver3(peak_pos(1),peak_pos(2),peak_pos(3),...
     peak_ori(1),peak_ori(2),peak_ori(3),2);
-arr_opt.LineWidth = 3;arr_opt.Color = 'b';
-quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_theta(1), peak_or_theta(2), peak_or_theta(3),2,'r')
-quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_phi(1), peak_or_phi(2), peak_or_phi(3),2,'g')
-quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_R(1), peak_or_R(2), peak_or_R(3),2,'b')
+arr_opt.LineWidth = 3;arr_opt.Color = 'k';
+% quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_theta(1), peak_or_theta(2), peak_or_theta(3),2,'r')
+% quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_phi(1), peak_or_phi(2), peak_or_phi(3),2,'g')
+% quiver3(peak_pos(1),peak_pos(2),peak_pos(3),peak_or_R(1), peak_or_R(2), peak_or_R(3),2,'b')
 
 dist_in_mm = sqrt(sum((peak_pos - dipole_pos).^2))*1000;
 
@@ -737,9 +806,7 @@ fprintf('Peak to truth distance = %1.3f mm (%1.1f mm res)\n',dist_in_mm,res);
 
 view([200,30])
 
-isz = endsWith(ch_table.name,'Z');
-isx = endsWith(ch_table.name,'X');
-isy = endsWith(ch_table.name,'Y');
+
 
 plot3(helmet_config.Px(phantom_slot_z),helmet_config.Py(phantom_slot_z),...
     helmet_config.Pz(phantom_slot_z),'ro','MarkerSize',5,'MarkerFaceColor','r')
@@ -749,15 +816,9 @@ arr_phantom_ax = quiver3(phantom_slot_pos(1),phantom_slot_pos(2),phantom_slot_po
 arr_phantom_ax.LineWidth = 2;arr_phantom_ax.Color = 'k';arr_phantom_ax.LineStyle=':';
 h_dip_pos = plot3(dipole_pos(1),dipole_pos(2),dipole_pos(3),'go','MarkerSize',10,...
     'MarkerFaceColor','k');
-arr_true = quiver3(dipole_pos(1),dipole_pos(2),dipole_pos(3),...
-    dipole_ori(1),dipole_ori(2),dipole_ori(3),3);
-arr_true.LineWidth = 3;arr_true.Color = 'k';
-field_lf = -(true_LF(isx).*xv + true_LF(isy).*yv + true_LF(isz).*zv);
 
-arrs_lf = quiver3(px',py',pz',...
-    field_lf(:,1),field_lf(:,2),field_lf(:,3),1,'b','LineWidth',2);
 
-sgtitle('"Ground truth" leadfield (left) and data fieldmap in Z channels (right; single time point)')
+sgtitle('"Ground truth" leadfield (left) and data average field (right; times where trigger voltage>3)')
 
 OPM_data_mfc_mean = mean(OPM_data_mfc(:,triggers<-3),2);
 % OPM_data_mfc_mean = mean(OPM_data_mfc(:,corrs>0.5),2);
@@ -772,17 +833,27 @@ arrs = quiver3(px',py',pz',...
 clim(5e3.*[-1    1])
 views = [-270,44;...
     170,15;...
-    0,70];
+    0,70;...
+    -90,0;...
+    0,90;...
+    180,0;...
+    -140,24];
 ax_res.XLim = ax_tru.XLim;
 ax_res.YLim = ax_tru.YLim;
 ax_res.ZLim = ax_tru.ZLim;
 %
-for vi = 1:3
+for vi = 1:length(views)
 set([ax_res, ax_tru],'View',views(vi,:))
 input('next')
+% saveas(gcf,sprintf('View%d.png',vi))
 end
 set([ax_res, ax_tru],'View',[200,30])
+saveas(gcf,sprintf('View%d.png',vi+1))
 
+figure
+plot(time_tot,-triggers,'k');hold on
+plot(time_tot(triggers<-3),-triggers(triggers<-3),'r.')
+title(sprintf('Time points with trigger > 3V (%d pts)',sum(triggers<-3)))
 %%
 for ti = 1:100
 %     waitforbuttonpress
@@ -798,4 +869,10 @@ for ti = 1:100
     arrs.VData = -field(:,2);
     arrs.WData = -field(:,3);
     drawnow
+end
+
+function R=fcn_RotationFromTwoVectors(A, B)
+    v = cross(A,B);
+    ssc = [0 -v(3) v(2); v(3) 0 -v(1); -v(2) v(1) 0];
+    R = eye(3) + ssc + ssc^2*(1-dot(A,B))/(norm(v))^2;
 end
