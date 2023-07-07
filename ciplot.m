@@ -34,4 +34,4 @@ if find(size(upper)==(max(size(upper))))<2
 upper=upper'; end
 
 f = fill([x fliplr(x)],[upper fliplr(lower)],colour,'LineStyle','none');
-alpha(f,0.5)
+alpha(f,0.3)
