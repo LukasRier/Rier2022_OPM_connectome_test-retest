@@ -1,4 +1,4 @@
-function ciplot(lower,upper,x,colour)
+function [f] = ciplot(lower,upper,x,colour)
 %% ciplot
 % ciplot(lower,upper)       
 % ciplot(lower,upper,x)
