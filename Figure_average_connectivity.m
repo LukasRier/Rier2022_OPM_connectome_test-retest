@@ -3,7 +3,7 @@ clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % set project dir to directory containing data from https://doi.org/10.5072/zenodo.1134455
-project_dir = '/path/to/data/folder';
+project_dir = 'F:\Rdrive\movie\';
 if ~exist(project_dir,'dir')
     error('Set project directory!')
 end
@@ -133,6 +133,10 @@ end
 %% global mean connectivity figure
 f = figure(9999);clf;f.Renderer = 'painters';
 f.Color = 'w';
+f.Units = 'centimeters';
+fwidth = 8;
+fheight = 4;
+f.Position([3,4]) = [fwidth,fheight];
 ax = axes;
 hold on
 c1 = [0.1216    0.4706    0.7059];
@@ -164,11 +168,14 @@ for  f_ind = 1:length(hpfs)
     end
 end
 ax.XTick=[1:length(hpfs)];
-ax.XTickLabel = band_name;ax.FontSize=15;
+ax.XTickLabel = band_name;
+
 % title(['Mean connectivity per band'])
-ylabel(['Mean global connectivity'])
+ylabel(sprintf('Global mean\nconnectivity'))
 legend('Run1','Run2','std. dev.')
 f.Renderer = 'painters';
+set(f.Children,'FontSize',9);
+
 if dosave
     saveas(f,sprintf('%saverage_conn_per_run.png',results_dir));
     saveas(f,sprintf('%saverage_conn_per_run.svg',results_dir));
@@ -176,6 +183,10 @@ end
 %% paired differences plot
 f = figure(1111);clf
 f.Color = 'w';f.Renderer = 'painters';
+f.Units = 'centimeters';
+fwidth = 8;
+fheight = 4;
+f.Position([3,4]) = [fwidth,fheight];
 ax = axes;
 hold on
 frq_cols = [237,248,177
@@ -199,9 +210,10 @@ for  f_ind = 1:length(hpfs)
 
 end
 ax.XTick=[1:length(hpfs)];
-ax.XTickLabel = band_name;ax.FontSize=15;
-ylabel(sprintf('Mean Connectivity difference'))
+ax.XTickLabel = band_name;
+ylabel(sprintf(['Mean Connectivity\ndifference']))
 f.Renderer = 'painters';
+set(f.Children,'FontSize',9);
 % legend('Run1-Run2','std. dev.','Location','best')
 if dosave
     saveas(f,sprintf('%saverage_conn_differences.png',results_dir));
@@ -302,41 +314,41 @@ end
 
 
 %%
-
 function plot_mat_n_brains(AECmat,predef_lims,f_ind,pctl,band_name)
-figure;
-set(gcf,'Position',[680 95 550 883],'Color','w','Renderer','painters')
-subplot(4,2,1:4)
-imagesc(AECmat);colorbar;
+fh = figure;
+set(fh,'Units','centimeters','Color','w','Renderer','painters');
+fwidth = 3.8;
+fheight = 5.9;
+fh.Position([3,4]) = [fwidth,fheight];
+ax_mat = axes;
+imagesc(AECmat);cb = colorbar('Location','southoutside','FontSize',8);
 %     cLims = [-max(abs(mean_AEC_b(:))) max(abs(mean_AEC_b(:)))];
 cLims = [-1,1]*predef_lims(f_ind);
 caxis(cLims);
-axis square; yticks([5, 14, 25, 37, 44, 53, 64, 76]);
+axis square; 
+yticks([5, 14, 25, 37, 44, 53, 64, 76]);
 yticklabels({'L.M.Frontal', 'L.P.Motor', 'L.Calcarine',...
     'L.Cingulum', 'R.M.Frontal', 'R.P.Motor', 'R.Calcarine', 'R.Cingulum'});
 xticks([5, 14, 25, 37, 44, 53, 64, 76]);
 xticklabels({'L.M.Frontal', 'L.P.Motor', 'L.Calcarine',...
     'L.Cingulum', 'R.M.Frontal', 'R.P.Motor', 'R.Calcarine', 'R.Cingulum'});
-xtickangle(45)
-ax=gca;
-ax.FontSize=15; ax.Position([1,2]) = [0.15,0.67];
+% xtickangle(45)
+ax_mat.Position = [0.46,0.58,0.52,0.52];
+ax_mat.FontSize=6;
+% = [0.15,0.67];
 
 drawnow
-ax3 = subplot(4,2,7);        ax3.Position = [0.05,0.005,0.45,0.24];
+ax3 = axes;        ax3.Position = [-0.1,0.0,0.6,0.3];
 go_netviewer_perctl_lim(AECmat,pctl,predef_lims(f_ind))
 view([-180,0]) %FRONT VIEW
-ax2 = subplot(4,2,5);        ax2.Position = [0.05,0.24,0.42,0.24];
+ax2 = axes;
+ax2.Position = [0.4,0.0,0.6,0.4];
 go_netviewer_perctl_lim(AECmat,pctl,predef_lims(f_ind))
 view([-90,0]) %side view
-ax1 = subplot(4,2,[6,8]);ax1.Position = [0.40,0,0.55,0.55];
+ax1 = axes;ax1.Position = [-0.05,0.25,0.55,0.4];
 go_netviewer_perctl_lim(AECmat,pctl,predef_lims(f_ind)) %top view
-st = suptitle(band_name{f_ind});
-st.FontSize = 35;
+% st = sgtitle(band_name{f_ind});
 drawnow
-ax1.Position = [0.40,0,0.55,0.55];
-ax2.Position = [0.05,0.20,0.42,0.24];
-ax3.Position = [0.05,0.005,0.45,0.24];
-drawnow
-set(gcf,'Renderer','painters')
+set(fh,'Renderer','painters')
 
 end
