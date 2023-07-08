@@ -114,7 +114,7 @@ for f_ind = 1:length(hpfs)
     plot_mat_n_brains(mean_AEC_b_corr,predef_lims,f_ind,pctl,band_name)
     
     if dosave
-        saveas(gcf,sprintf('%saverage_conn1_%d_%d_Hz_meancorr.png',results_dir,hp,lp));
+        print(gcf,sprintf('%saverage_conn1_%d_%d_Hz_meancorr.png',results_dir,hp,lp),'-dpng','-r600');
         saveas(gcf,sprintf('%saverage_conn1_%d_%d_Hz_meancorr.svg',results_dir,hp,lp));
     end
     %%
@@ -124,7 +124,7 @@ for f_ind = 1:length(hpfs)
     plot_mat_n_brains(mean_AEC_b2_corr,predef_lims,f_ind,pctl,band_name)
        
     if dosave
-        saveas(gcf,sprintf('%saverage_conn2_%d_%d_Hz_meancorr.png',results_dir,hp,lp));
+        print(gcf,sprintf('%saverage_conn2_%d_%d_Hz_meancorr.png',results_dir,hp,lp),'-dpng','-r600');
         saveas(gcf,sprintf('%saverage_conn2_%d_%d_Hz_meancorr.svg',results_dir,hp,lp));
     end
 end
@@ -177,7 +177,7 @@ f.Renderer = 'painters';
 set(f.Children,'FontSize',9);
 
 if dosave
-    saveas(f,sprintf('%saverage_conn_per_run.png',results_dir));
+    print(f,sprintf('%saverage_conn_per_run.png',results_dir),'-dpng','-r600');
     saveas(f,sprintf('%saverage_conn_per_run.svg',results_dir));
 end
 %% paired differences plot
@@ -216,7 +216,7 @@ f.Renderer = 'painters';
 set(f.Children,'FontSize',9);
 % legend('Run1-Run2','std. dev.','Location','best')
 if dosave
-    saveas(f,sprintf('%saverage_conn_differences.png',results_dir));
+    print(f,sprintf('%saverage_conn_differences.png',results_dir),'-dpng','-r600');
     saveas(f,sprintf('%saverage_conn_differences.svg',results_dir));
 end
 %%
@@ -308,7 +308,7 @@ drawnow
 fcorr.Renderer = 'painters';
 
 if dosave
-    saveas(fcorr,sprintf('%saverage_conn_betw_run_correlations_meancorr.png',results_dir));
+    print(fcorr,sprintf('%saverage_conn_betw_run_correlations_meancorr.png',results_dir),'-dpng','-r600');
     saveas(fcorr,sprintf('%saverage_conn_betw_run_correlations_meancorr.svg',results_dir));
 end
 
@@ -333,7 +333,7 @@ xticks([5, 14, 25, 37, 44, 53, 64, 76]);
 xticklabels({'L.M.Frontal', 'L.P.Motor', 'L.Calcarine',...
     'L.Cingulum', 'R.M.Frontal', 'R.P.Motor', 'R.Calcarine', 'R.Cingulum'});
 % xtickangle(45)
-ax_mat.Position = [0.46,0.58,0.52,0.52];
+ax_mat.Position = [0.46,0.57,0.52,0.52];
 ax_mat.FontSize=6;
 % = [0.15,0.67];
 
