@@ -8,6 +8,8 @@ addpath ./gifti-1.8/
 
 % set project dir to directory containing data from https://doi.org/10.5072/zenodo.1134455
 project_dir = '/path/to/data/folder';
+project_dir = 'F:\Rdrive\movie\';
+
 if ~exist(project_dir,'dir')
     error('Set project directory!')
 end
@@ -58,36 +60,43 @@ end
 %
 %%
 mean_pow = mean(band_vars,3); % across subjects
-
+fig_height = 7.5;
+fig_width = 3;
 band_name = {'\theta','\alpha','\beta','\gamma_1','\gamma_2','\gamma_3'};
 for f_i = 1:length(hpfs)
 
     col_range = [0,1].*max(mean_pow(:,f_i));
-    f1 = figure;f1.Renderer = 'painters';
-    set(f1,'Color','w','Position',[680    71   386   907])
+    f1(f_i) = figure;
+    set(f1(f_i) ,'Color','w','Units','centimeters','Renderer','painters');
+    f1(f_i).Position([3,4]) = [fig_width,fig_height];
     ax(1) = axes;
     PaintBrodmannAreas_chooseview(mean_pow(:,f_i),78, 256, col_range,[], [], [-90,0])
-    ax(1).Position = [0.01,0.1,0.9,0.3];
     cb = colorbar;set(cb,'Location','southoutside');
-    cb.Label.FontSize = 6;cb.FontSize=15;
-    cb.Position([1,2]) = cb.Position([1,2])-[-0.05,0.07];
+    cb.Label.FontSize = 9;cb.FontSize=9;cb.Label.String = 'Relative power (A.U.)';
     drawnow
-    
+    ax(1).Position = [0.1,0.18,0.8,0.27];
+    cb.Position([1,2]) = [0.1,0.145];
+
     ax(2) = axes;
     PaintBrodmannAreas_chooseview(mean_pow(:,f_i),78, 256, col_range,[], [] )
-    ax(2).Position = [0.08,0.70,0.9,0.3];
+    ax(2).Position = [0.1,0.64,0.8,0.25];
     drawnow
     
     ax(3) = axes;
     PaintBrodmannAreas_chooseview(mean_pow(:,f_i),78, 256, col_range,[], [], [90,0] )
-    ax(3).Position = [0.1,0.38,0.9,0.3];
+    ax(3).Position = [0.1,0.42,0.8,0.25];
     
-    st = suptitle(band_name{f_i})
-    % pause
-    st.FontSize = 35;f1.Renderer = 'painters';
+    st = annotation('textbox',[0.45,0.95,0.1,0.05],'String',band_name{f_i},...
+        'FontSize',15,...
+        'EdgeColor','w',...
+        'HorizontalAlignment','center',...
+        'VerticalAlignment','top',...
+        'Margin',0);
+
+    f1(f_i).Renderer = 'painters';
     drawnow
-    saveas(f1,sprintf('%s%s_average_brains.png',results_dir,band_name{f_i}(2:end)))
-    saveas(f1,sprintf('%s%s_average_brains.svg',results_dir,band_name{f_i}(2:end)))
+    print(f1(f_i),sprintf('%s%s_average_brains.png',results_dir,band_name{f_i}(2:end)),'-dpng','-r600')
+%     saveas(f1(f_i),sprintf('%s%s_average_brains.svg',results_dir,band_name{f_i}(2:end)))
 end
 
 
@@ -163,57 +172,72 @@ regs = [16,25,7];
 xlims = [.5,50];
 c1 = [0.1216    0.4706    0.7059];
 c2 = [  0.2000    0.6275    0.1725];
-for x = regs
-    figure;set(gcf,'Color','w','Position',[63   507   815   420],'Renderer','painters');
-    s1 = subplot(2,1,1);
-    plot(fxx,mean_PSD_raw(:,x),'Color',c1,'Linewidth',2);
+fig_height = 8;
+fig_width = 20;
+lnwidth = 1;
+psd_fig = figure;
+    set(psd_fig,'Color','w','Units','centimeters','Renderer','painters');
+    psd_fig.Position([3,4]) = [fig_width,fig_height];
+for reg_i = 1:length(regs)
+    x = regs(reg_i);
+    s1(reg_i) = subplot(2,3,reg_i);
+    
+    ci_run1 = ciplot(mean_PSD_raw(:,x)-err_PSD_raw(:,x),mean_PSD_raw(:,x)+err_PSD_raw(:,x),fxx,c1);
     hold on
-    ciplot(mean_PSD_raw(:,x)-err_PSD_raw(:,x),mean_PSD_raw(:,x)+err_PSD_raw(:,x),fxx,c1)
+    ci_run2 = ciplot(mean_PSD_raw2(:,x)-err_PSD_raw2(:,x),mean_PSD_raw2(:,x)+err_PSD_raw2(:,x),fxx,c2);
+    p_run1 = plot(fxx,mean_PSD_raw(:,x),'Color',c1,'Linewidth',lnwidth);
+    p_run2 = plot(fxx,mean_PSD_raw2(:,x),'Color',c2,'Linewidth',lnwidth);
     
-    plot(fxx,mean_PSD_raw2(:,x),'Color',c2,'Linewidth',2);
-    ciplot(mean_PSD_raw2(:,x)-err_PSD_raw2(:,x),mean_PSD_raw2(:,x)+err_PSD_raw2(:,x),fxx,c2)
-    
-    plot(fxx,mean_noisePSD_raw(:,x),'Color','r','Linewidth',2);
-    ciplot(mean_noisePSD_raw(:,x)-err_noisePSD_raw(:,x),mean_noisePSD_raw(:,x)+err_noisePSD_raw(:,x),fxx,[1,0,0])
+    p_noise = plot(fxx,mean_noisePSD_raw(:,x),'Color','r','Linewidth',lnwidth);
+    ci_noise = ciplot(mean_noisePSD_raw(:,x)-err_noisePSD_raw(:,x),mean_noisePSD_raw(:,x)+err_noisePSD_raw(:,x),fxx,[1,0,0]);
     
     xlim(xlims)
     xlabel('Frequency (Hz)')
-    legend('Run1','std. err.','Run2','std. err.','Empty Room','std. err.','Location','north')
-
     ylabel(y_ax_lbl)
-    
-    s2 = subplot(2,1,2);
-    plot(fxx,mean_PSD_raw(:,x+39),'Color',c1,'Linewidth',2);
+    if reg_i ==2
+        lh=legend([p_run1,ci_run1,p_run2,ci_run2,p_noise,ci_noise],...
+            {'Run1','std. err.','Run2','std. err.','Empty Room','std. err.'},...
+            'NumColumns',3);
+    end
+
+    s2(reg_i) = subplot(2,3,length(regs)+reg_i);
+    ciplot(mean_PSD_raw(:,x+39)-err_PSD_raw(:,x+39),mean_PSD_raw(:,x+39)+err_PSD_raw(:,x+39),fxx,c1);
     hold on
-    ciplot(mean_PSD_raw(:,x+39)-err_PSD_raw(:,x+39),mean_PSD_raw(:,x+39)+err_PSD_raw(:,x+39),fxx,c1)
-    
-    plot(fxx,mean_PSD_raw2(:,x+39),'Color',c2,'Linewidth',2);
-    ciplot(mean_PSD_raw2(:,x+39)-err_PSD_raw2(:,x+39),mean_PSD_raw2(:,x+39)+err_PSD_raw2(:,x+39),fxx,c2)
-    
-    plot(fxx,mean_noisePSD_raw(:,x),'Color','r','Linewidth',2);
-    ciplot(mean_noisePSD_raw(:,x)-err_noisePSD_raw(:,x),mean_noisePSD_raw(:,x)+err_noisePSD_raw(:,x),fxx,[1,0,0])
+    ciplot(mean_PSD_raw2(:,x+39)-err_PSD_raw2(:,x+39),mean_PSD_raw2(:,x+39)+err_PSD_raw2(:,x+39),fxx,c2);
+    ciplot(mean_noisePSD_raw(:,x)-err_noisePSD_raw(:,x),mean_noisePSD_raw(:,x)+err_noisePSD_raw(:,x),fxx,[1,0,0]);
+    plot(fxx,mean_PSD_raw(:,x+39),'Color',c1,'Linewidth',lnwidth);
+    plot(fxx,mean_PSD_raw2(:,x+39),'Color',c2,'Linewidth',lnwidth);
+    plot(fxx,mean_noisePSD_raw(:,x),'Color','r','Linewidth',lnwidth);
 
     xlim(xlims)
     xlabel('Frequency (Hz)')
     ylabel(y_ax_lbl)
     
-    ax = axes;
+    ax(reg_i) = axes;
     rrr=.1.*ones(1,78);rrr(x) = 1;
     PaintBrodmannAreas_1view(rrr,78, 256, [0,1],[], [] )
     if x == 25;view([0,0]),camlight;end
-    ax.Position=[0.8,0.75,0.1,0.15];
+    brain_sz = [0.1,0.15].*1.2;
+    brain_xpos = [0.24,0.5,0.8];
+    ax(reg_i).Position=[brain_xpos(reg_i),0.7,brain_sz(1),brain_sz(2)];
     
-    ax2=axes;
+    ax2(reg_i)=axes;
     rrr=.1.*ones(1,78);rrr(x+39) = 1;
     PaintBrodmannAreas_1view(rrr,78, 256, [0,1],[], [] )
     if x == 25;view([0,0]),camlight;end
-    ax2.Position=[0.8,0.27,0.1,0.15];
+    ax2(reg_i).Position=[brain_xpos(reg_i),0.25,brain_sz(1),brain_sz(2)];
     drawnow
     set(gcf,'Renderer','painters');
-    saveas(gcf,sprintf('%sregion_%d_average_specs_w_noise.png',results_dir,x))
-    saveas(gcf,sprintf('%sregion_%d_average_specs_w_noise.svg',results_dir,x))
-
 end
+set(psd_fig.Children,...
+        'FontSize',9,'Units','centimeters');
+psd_fig.Position(4) = fig_height + lh.Position(4);
+drawnow
+lh.Position([1,2]) = [psd_fig.Position([3])/2-lh.Position(3)/2,psd_fig.Position([4])-lh.Position(4)];
+
+psd_fig.PaperPositionMode   = 'auto';
+print(gcf,sprintf('%sAll_average_specs_w_noise.png',results_dir),'-dpng','-r600')
+saveas(gcf,sprintf('%sAll_average_specs_w_noise.svg',results_dir))
 
 %% Spectral Difference
 resf = fopen([results_dir,'spectral_power_results.csv'],'w');
@@ -255,7 +279,7 @@ ax(3) = axes;
 PaintBrodmannAreas_chooseview(pc_rms_diff,78, 256, col_range,[], [], [90,0] )
 ax(3).Position = [0.1,0.38,0.9,0.3];
 
-st = suptitle(sprintf('%% Difference (mean = %1.4f)',mean(pc_rms_diff)));
+st = sgtitle(sprintf('%% Difference (mean = %1.4f)',mean(pc_rms_diff)));
 
 drawnow
 
@@ -308,7 +332,7 @@ for f_i = 1:length(hpfs)
     PaintBrodmannAreas_chooseview(band_SNR,78, 256, col_range,[], [], [90,0] )
     ax(3).Position = [0.1,0.38,0.9,0.3];
     
-    st = suptitle(sprintf('SNR_{%s} (mean = %1.4f)',band_name{f_i},mean(band_SNR)));
+    st = sgtitle(sprintf('SNR_{%s} (mean = %1.4f)',band_name{f_i},mean(band_SNR)));
 
     drawnow
     saveas(f1,sprintf('%sSNR_%d-%dHz_AALbrain.png',results_dir,hp,lp))
@@ -358,7 +382,7 @@ for f_i = 1:length(hpfs)
     PaintBrodmannAreas_chooseview(delta_psd,78, 256, col_range,[], [], [90,0] )
     ax(3).Position = [0.1,0.38,0.9,0.3];
     
-    st = suptitle(sprintf('%sPSD_{%s} (mean = %1.4f)','\Delta',band_name{f_i},mean(delta_psd)));
+    st = sgtitle(sprintf('%sPSD_{%s} (mean = %1.4f)','\Delta',band_name{f_i},mean(delta_psd)));
 
     
     drawnow
@@ -387,7 +411,7 @@ for f_i = 1:length(hpfs)
     PaintBrodmannAreas_chooseview(stats.tstat,78, 256, col_range,[], [], [90,0] )
     ax(3).Position = [0.1,0.38,0.9,0.3];
     
-    st = suptitle(sprintf('TStat | %s PSD_{%s} (mean = %1.4f)','\Delta',band_name{f_i},nanmean(stats.tstat)));
+    st = sgtitle(sprintf('TStat | %s PSD_{%s} (mean = %1.4f)','\Delta',band_name{f_i},nanmean(stats.tstat)));
 
     drawnow
     saveas(f1,sprintf('%sTstat_PSD_diff_%d-%dHz_AALbrain.png',results_dir,hp,lp))
