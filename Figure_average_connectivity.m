@@ -8,6 +8,7 @@ if ~exist(project_dir,'dir')
     error('Set project directory!')
 end
 results_dir = [project_dir,'results',filesep,'average_connectomes',filesep];
+% results_dir = [project_dir,'results_poster',filesep,'average_connectomes',filesep];
 mkdir(results_dir)
 datadir = [project_dir,'data',filesep];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -224,6 +225,9 @@ end
 fcorr = figure();clf
 fcorr.Color = 'w';fcorr.Renderer = 'painters';fcorr.Units = 'centimeters';
 tit_fs = 10.8
+tit_fs = 20 %for poster
+fcorr.Position([3,4]) = [25 19];
+fcorr.Position([3,4]) = [36.44 28.17];%for poster
 ax1 = subplot(3,length(hpfs),[length(hpfs)+1 : length(hpfs)*2]);
 hold on
 xlabel('Frequency (Hz)')
@@ -238,7 +242,7 @@ for f_ind = 1:length(hpfs)
     ylabel('Run 2')
     hold on
     xlims = ylim;
-    title(band_name{f_ind},'FontSize',tit_fs);
+    th(f_ind) = title(band_name{f_ind},'FontSize',tit_fs);
     xlim(xlims);ylim(xlims)
     plot(xlim,xlim,'r')
     axis square
@@ -302,8 +306,10 @@ for f_ind = 1:length(hpfs)
     xlim([1.5,10.5])
 %     set(gca,'FontSize',11)
 end
-fcorr.Position([3,4]) = [25 19];
 
+
+set(fcorr.Children,'FontSize',12);
+set(th,'FontSize',tit_fs);
 drawnow
 fcorr.Renderer = 'painters';
 
@@ -311,14 +317,17 @@ if dosave
     print(fcorr,sprintf('%saverage_conn_betw_run_correlations_meancorr.png',results_dir),'-dpng','-r600');
     saveas(fcorr,sprintf('%saverage_conn_betw_run_correlations_meancorr.svg',results_dir));
 end
-
-
+%%
+% plot_mat_n_brains(AECmat,predef_lims,f_ind,pctl,band_name)
 %%
 function plot_mat_n_brains(AECmat,predef_lims,f_ind,pctl,band_name)
 fh = figure;
 set(fh,'Units','centimeters','Color','w','Renderer','painters');
 fwidth = 3.8;
 fheight = 5.9;
+
+fwidth = 6.99;%for poster
+fheight = 10.8529;%for poster
 fh.Position([3,4]) = [fwidth,fheight];
 ax_mat = axes;
 imagesc(AECmat);cb = colorbar('Location','southoutside','FontSize',8);
@@ -332,9 +341,10 @@ yticklabels({'L.M.Frontal', 'L.P.Motor', 'L.Calcarine',...
 xticks([5, 14, 25, 37, 44, 53, 64, 76]);
 xticklabels({'L.M.Frontal', 'L.P.Motor', 'L.Calcarine',...
     'L.Cingulum', 'R.M.Frontal', 'R.P.Motor', 'R.Calcarine', 'R.Cingulum'});
-% xtickangle(45)
+xtickangle(90)
 ax_mat.Position = [0.46,0.57,0.52,0.52];
 ax_mat.FontSize=6;
+ax_mat.FontSize=11;%for poster
 % = [0.15,0.67];
 
 drawnow
@@ -343,6 +353,7 @@ go_netviewer_perctl_lim(AECmat,pctl,predef_lims(f_ind))
 view([-180,0]) %FRONT VIEW
 ax2 = axes;
 ax2.Position = [0.4,0.0,0.6,0.4];
+ax2.Position = [0.4,0.0,0.57,0.4];%for poster
 go_netviewer_perctl_lim(AECmat,pctl,predef_lims(f_ind))
 view([-90,0]) %side view
 ax1 = axes;ax1.Position = [-0.05,0.25,0.55,0.4];

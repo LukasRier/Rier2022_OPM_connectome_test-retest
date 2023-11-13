@@ -2,7 +2,8 @@ clear all
 clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % set project dir to directory containing data from https://doi.org/10.5072/zenodo.1134455
-project_dir = '/path/to/data/folder';
+% project_dir = '/path/to/data/folder';
+project_dir = 'F:\Rdrive\movie\';
 if ~exist(project_dir,'dir')
     error('Set project directory!')
 end

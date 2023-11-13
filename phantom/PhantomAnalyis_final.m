@@ -97,15 +97,12 @@ for n = 1:size(sensornames,1)
     Sens_pos(n,:) = [helmet_config.Px(ch_index),helmet_config.Py(ch_index),helmet_config.Pz(ch_index)];
     Sens_ors(n,:) =[helmet_config.Ox(ch_index),helmet_config.Oy(ch_index),helmet_config.Oz(ch_index)];;
 end
-figure
-scatter3(Sens_pos(:,1),Sens_pos(:,2),Sens_pos(:,3))
-hold on
-quiver3(Sens_pos(:,1),Sens_pos(:,2),Sens_pos(:,3),Sens_ors(:,1),Sens_ors(:,2),Sens_ors(:,3))
-
-figure
-
-plot(time,[0,diff(triggers(1,:))]);
-xlim([0,10])
+% 
+% 
+% figure
+% 
+% plot(time,[0,diff(triggers(1,:))]);
+% xlim([0,10])
 
 % find beginnning
 beginning_sample = find(triggers(1,:)>0.1,1);
@@ -115,10 +112,10 @@ OPM_data = OPM_data(:,beginning_sample+1:beginning_sample+duration*f);
 triggers = triggers(1,beginning_sample+1:beginning_sample+duration*f);
 time = time(beginning_sample+1:beginning_sample+duration*f);time=time-time(1);
 
-figure
-
-plot(time,triggers);
-xlim([0,10])
+% figure
+% 
+% plot(time,triggers);
+% xlim([0,10])
 
 %%
 %% Make FT data structure
@@ -247,44 +244,68 @@ lead_fields_shell_xyz(:,:,outside==1) = [];
 Ndips = length(sourcepos);
 
 
+
 %%
 ff = figure;
-load meshes.mat
 ff.Color = 'w';
-subplot(2,3,[1 2 4 5])
 ft_plot_mesh(meshes,'facecolor',[.5 .5 .5],'facealpha',.3,'edgecolor','none')
 hold on
+meshes_h = get(gca,'Children');
+set(meshes_h,'FaceAlpha',0.2,'HandleVisibility','off')
+sens_slots = scatter3(S.sensor_info.pos(:,1),S.sensor_info.pos(:,2),S.sensor_info.pos(:,3),'bs','filled');
+sens_slots.SizeData = 15;sens_slots.DisplayName = 'Sensor Slots';
+ff.Units = 'centimeters';
+ff.Position([3,4]) = [5,5];
+set(ff.Children,'FontSize',9);
+lh = legend;
+set(gca,'Position',[0,0.12,1,1])
+% hold on
+% quiver3(Sens_pos(:,1),Sens_pos(:,2),Sens_pos(:,3),Sens_ors(:,1),Sens_ors(:,2),Sens_ors(:,3))
+view([90,0])
 
-view([200,30])
+%
+
 
 isz = endsWith(ch_table.name,'Z');
 isx = endsWith(ch_table.name,'X');
 isy = endsWith(ch_table.name,'Y');
 
 plot3(helmet_config.Px(phantom_slot_z),helmet_config.Py(phantom_slot_z),...
-    helmet_config.Pz(phantom_slot_z),'ro','MarkerSize',5,'MarkerFaceColor','r')
+    helmet_config.Pz(phantom_slot_z),'ro','MarkerSize',5,'MarkerFaceColor','r','DisplayName','Phantom slot')
 
 arr_phantom_ax = quiver3(phantom_slot_pos(1),phantom_slot_pos(2),phantom_slot_pos(3),...
     phantom_axis(1),phantom_axis(2),phantom_axis(3));
-arr_phantom_ax.LineWidth = 2;arr_phantom_ax.Color = 'k';arr_phantom_ax.LineStyle=':';
-h_dip_pos = plot3(dipole_pos(1),dipole_pos(2),dipole_pos(3),'go','MarkerSize',10,...
-    'MarkerFaceColor','k');
+arr_phantom_ax.LineWidth = 2;arr_phantom_ax.Color = 'k';arr_phantom_ax.LineStyle=':';arr_phantom_ax.HandleVisibility = 'off'
+h_dip_pos = plot3(dipole_pos(1),dipole_pos(2),dipole_pos(3),'go','MarkerSize',5,...
+    'MarkerFaceColor','g','DisplayName','Dipole position');
 arr_true = quiver3(dipole_pos(1),dipole_pos(2),dipole_pos(3),...
     dipole_ori(1),dipole_ori(2),dipole_ori(3),3);
-arr_true.LineWidth = 3;arr_true.Color = 'k';
+arr_true.LineWidth = 3;arr_true.Color = 'k';arr_true.HandleVisibility='off';
 % take LF from actual loc
 actual_location = 1;
 if actual_location
     [bf_outs_dip] = Copy_of_run_beamformer('shell',dipole_pos,S,0,[],1);
+    close(gcf)
     lead_fields_shell_dip_xyz = bf_outs_dip.LF;
+
 else
     % Take LF from nearest voxel
     [~,nearest_i] = min(sum((sourcepos - dipole_pos).^2,2));
     lead_fields_shell_dip_xyz = lead_fields_shell_xyz(:,1,nearest_i);
 end
+
 true_LF = (dipole_ori(1)*lead_fields_shell_dip_xyz(:,1) + ...
     dipole_ori(2)*lead_fields_shell_dip_xyz(:,2) + ...
     dipole_ori(3)*lead_fields_shell_dip_xyz(:,3))./norm(dipole_ori);
+
+lh.Position = [0.01,0.01, 0.8079, 0.2487];
+print(ff,'Head_w_sensors_side.png','-dpng','-r600')
+
+lh.Visible = 'off';
+view([0,80])
+set(gca,'Position',[0,0.01,1,1])
+print(ff,'Head_w_sensors_top.png','-dpng','-r600')
+
 %% dipole leadfields
 
 [phi,theta1,r] = cart2sph(dipole_pos(1) - Origin(1),dipole_pos(2) - Origin(2),...
@@ -588,23 +609,37 @@ for f_ind = 1:N_folds
     VE_z([1:300,end-300:end])=[];
     triggers_z([1:300,end-300:end])=[];
     %
-    % figure
-    % plot(time,VE_z)
-    % hold on
-    % plot(time,triggers_z)
+    
+    f_VE_psd = figure;
+    f_VE_psd.Color = 'w';
+    f_VE_psd.Units = 'centimeters';
+    f_VE_psd.Position([3,4]) = [8,6];
+
+    subplot(2,1,1)
+    example_inds = 60001:60001+f;
+    plot(time(example_inds),VE_z(example_inds),'LineWidth',1.5)
+    hold on
+    plot(time(example_inds),triggers_z(example_inds),':','LineWidth',1.5)
+    xlabel('Time (s)')
+    ylabel(sprintf('Amplitude (A.U)'))
 
     fftwin_s = 1;
     [pxx_VE(:,f_ind),~] = pwelch(VE_z,fftwin_s*f,[],[],f);
     [pxx_trig(:,f_ind),fxx] = pwelch(triggers_z,fftwin_s*f,[],[],f);
     spec_rms_diff(f_ind) = sqrt(mean((pxx_VE(:,f_ind) - pxx_trig(:,f_ind)).^2));
 
-    figure
-    plot(fxx,pxx_VE(:,f_ind))
+    subplot(2,1,2)
+    plot(fxx,pxx_VE(:,f_ind),'LineWidth',1.5)
     hold on
-    plot(fxx,pxx_trig(:,f_ind))
+    plot(fxx,pxx_trig(:,f_ind),':','LineWidth',1.5)
+    xlabel('Frequency (Hz)')
+    ylabel('Welch PSD (A.U)')
     legend('VE', 'Trigger signal')
     xlim([0,60])
-    
+    set(f_VE_psd.Children,'FontSize',9)
+    if f_ind == 2
+        print(f_VE_psd,'Example_VE_PSD.png','-dpng','-r600')
+    end
     similiarity_folds(f_ind) = mean(abs(similarity(win(f_ind,triggers_z>1.5))));
     
     correlation_folds(f_ind) = corr(VE_z',triggers_z');
@@ -721,46 +756,55 @@ ylim([-0.12    0.090])
 zlim([-0.0838    0.1272])
 
 
-fg = gcf;
-fg.Color = 'w';
+fg0.Color = 'w';
 ax = gca;
 ax.FontSize = 14;
 
 %plot phantom location
-plot3(helmet_config.Px(phantom_slot_z),helmet_config.Py(phantom_slot_z),...
-    helmet_config.Pz(phantom_slot_z),'ro','MarkerSize',5,'MarkerFaceColor','r')
+ph_slot = plot3(helmet_config.Px(phantom_slot_z),helmet_config.Py(phantom_slot_z),...
+    helmet_config.Pz(phantom_slot_z),'ro','MarkerSize',5,'MarkerFaceColor','r');
 
 arr_phantom_ax = quiver3(phantom_slot_pos(1),phantom_slot_pos(2),phantom_slot_pos(3),...
     phantom_axis(1),phantom_axis(2),phantom_axis(3));
 arr_phantom_ax.LineWidth = 2;arr_phantom_ax.Color = 'k';arr_phantom_ax.LineStyle=':';
-h_dip_pos = plot3(dipole_pos(1),dipole_pos(2),dipole_pos(3),'go','MarkerSize',10,...
-    'MarkerFaceColor','k');
-arr_true = quiver3(dipole_pos(1),dipole_pos(2),dipole_pos(3),...
-    dipole_ori(1),dipole_ori(2),dipole_ori(3),3);
-arr_true.LineWidth = 3;arr_true.Color = 'k';
+% h_dip_pos = plot3(dipole_pos(1),dipole_pos(2),dipole_pos(3),'go','MarkerSize',10,...
+%     'MarkerFaceColor','k');
+% arr_true = quiver3(dipole_pos(1),dipole_pos(2),dipole_pos(3),...
+%     dipole_ori(1),dipole_ori(2),dipole_ori(3),3);
+% arr_true.LineWidth = 3;arr_true.Color = 'k';
 
-plot3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),'g*','LineWidth',1,'MarkerSize',10,'MarkerFaceColor','g')
+plot3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),'g*','LineWidth',1,'MarkerSize',7,'MarkerFaceColor','g')
 arr_opt = quiver3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),...
     peak_ori(:,1),peak_ori(:,2),peak_ori(:,3),4);
 arr_opt.LineWidth = lw;arr_opt.Color = 'b';
 
-view([-90 0])
-xlim([-0.0000    0.2306])
+view([90 0])
+xlim(sort(-[-0.0000    0.2306]))
 ylim([-0.12    0.090])
 zlim([-0.0838    0.1272])
+fg0.Position([3,4]) = [2.3,3.2];
+set(gca,'Position',[0,0,1,1])
+print(fg0,'Z_map_side.png','-dpng','-r600')
+
 
 view([0 90])
 xlim([-0.2306    0.2306])
 ylim([-0.12    0.090])
 zlim([-0.0838    0.06575])
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+fg0.Position([3,4]) = [5,5];
+set(gca,'Position',[0,0,1,1])
+ph_slot.Visible = 'off';
+print(fg0,'Z_map_top.png','-dpng','-r600')
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+pct_thresh = 0.6;
 f_compare = figure;
 lw = 1.5;
 f_compare.Color = 'w';f_compare.Units = 'centimeters';
 f_compare.Position = [37 13.6260 8 4];
-ax_tru = subplot(122);
+
+%%Ground Truth
+ax_tru = subplot(121);
 % head and brain meshes
 ft_plot_mesh(meshes,'facecolor',[.5 .5 .5],'facealpha',.3,'edgecolor','none');
 ax_tru.Children(1).Visible = 0;
@@ -776,35 +820,21 @@ arr_phantom_ax.LineWidth = 3;arr_phantom_ax.Color = 'k';arr_phantom_ax.LineStyle
 % ground truth phantom position
 h_dip_pos = plot3(dipole_pos(1),dipole_pos(2),dipole_pos(3),'go','MarkerSize',5,...
     'MarkerFaceColor','k');
-% ground truth phantom orientation
-arr_true = quiver3(dipole_pos(1),dipole_pos(2),dipole_pos(3),...
-    dipole_ori(1),dipole_ori(2),dipole_ori(3),3);
-arr_true.LineWidth = 3;arr_true.Color = 'k';
+
 
 % Field in Z
 field_mag = true_LF(isz);
 DT= boundary(S.sensor_info.pos(isz,1),S.sensor_info.pos(isz,2),S.sensor_info.pos(isz,3),0);
-h=trisurf(DT,S.sensor_info.pos(isz,1),S.sensor_info.pos(isz,2),S.sensor_info.pos(isz,3),field_mag);
-h.FaceColor = 'interp';h.EdgeColor = 'none';h.FaceAlpha = 0.5;colormap parula
-clim([-1,1].*0.5e-14);%colormap hot
+h_trusurf=trisurf(DT,S.sensor_info.pos(isz,1),S.sensor_info.pos(isz,2),S.sensor_info.pos(isz,3),field_mag);
+h_trusurf.FaceColor = 'interp';h_trusurf.EdgeColor = 'none';h_trusurf.FaceAlpha = 0.5;colormap parula
+% clim([-1,1].*0.5e-14);%colormap hot
+clim(pct_thresh.*[-1    1].*max(abs(field_mag)))
+
 axis equal
 
-
-ax_res = subplot(121);
-ax_res.CameraViewAngleMode = 'manual';
-axis off
-axis equal
-view([200,30])
-copyobj(ax_tru.Children,ax_res);
-clim([-1,1].*5e-15);%colormap hot
-hold on
-arrs = quiver3(px',py',pz',...
-    field(:,1),field(:,2),field(:,3),1,'r','LineWidth',lw);
-
-hold on
-h.Visible = 0;
-
-subplot(ax_tru);
+arr_true = quiver3(dipole_pos(1),dipole_pos(2),dipole_pos(3),...
+    dipole_ori(1),dipole_ori(2),dipole_ori(3),3);
+arr_true.LineWidth = 3;arr_true.Color = 'k';
 
 view([200,30])
 
@@ -812,21 +842,63 @@ isz = endsWith(ch_table.name,'Z');
 isx = endsWith(ch_table.name,'X');
 isy = endsWith(ch_table.name,'Y');
 
+field_lf = -(true_LF(isx).*xv + true_LF(isy).*yv + true_LF(isz).*zv);
+arrs_lf = quiver3(px',py',pz',...
+    field_lf(:,1),field_lf(:,2),field_lf(:,3),1,'b','LineWidth',lw);
+cbtru = colorbar('location','southoutside');
+% cbtru.Label.String ='Lead Field (T)';cbtru.Label.Position =[-0.0000   -3.1533         0];
+
+%%RESULT
+ax_res = subplot(122);
+% head and brain meshes
+ft_plot_mesh(meshes,'facecolor',[.5 .5 .5],'facealpha',.3,'edgecolor','none');
+ax_res.Children(1).Visible = 0;
+hold on
+view([200,30])
+% phantom slot red sphere
+plot3(helmet_config.Px(phantom_slot_z),helmet_config.Py(phantom_slot_z),...
+    helmet_config.Pz(phantom_slot_z),'ro','MarkerSize',3,'MarkerFaceColor','r')
+% dotted line to phantom position
+arr_phantom_ax = quiver3(phantom_slot_pos(1),phantom_slot_pos(2),phantom_slot_pos(3),...
+    phantom_axis(1),phantom_axis(2),phantom_axis(3));
+arr_phantom_ax.LineWidth = 3;arr_phantom_ax.Color = 'k';arr_phantom_ax.LineStyle=':';
+% ground truth phantom position
+h_dip_pos = plot3(dipole_pos(1),dipole_pos(2),dipole_pos(3),'ko','MarkerSize',5,...
+    'MarkerFaceColor','k');
+
+% recon dipole
+arr_opt = quiver3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),...
+    peak_ori(:,1),peak_ori(:,2),peak_ori(:,3),4);
+arr_opt.LineWidth = 5;arr_opt.Color = 'r';
+plot3(peak_pos(:,1),peak_pos(:,2),peak_pos(:,3),'g*','LineWidth',2,'MarkerSize',9,'MarkerFaceColor','g')
+
+% 
+
+% clim([-1,1].*5e-15);%colormap hot
+hold on
+
 
 OPM_data_mfc_mean = mean(OPM_data_mfc(:,triggers<-3),2);
 % OPM_data_mfc_mean = mean(OPM_data_mfc(:,corrs>0.5),2);
 field  = (OPM_data_mfc_mean(isx).*xv + OPM_data_mfc_mean(isy).*yv + OPM_data_mfc_mean(isz).*zv);
+arrs = quiver3(px',py',pz',...
+    field(:,1),field(:,2),field(:,3),1,'r','LineWidth',lw);
+h_meas_surf=trisurf(DT,S.sensor_info.pos(isz,1),S.sensor_info.pos(isz,2),S.sensor_info.pos(isz,3),-1e-15.*(OPM_data_mfc_mean(isz)));
+h_meas_surf.FaceColor = 'interp';h_meas_surf.EdgeColor = 'none';h_meas_surf.FaceAlpha = 0.5;colormap parula
+clim(pct_thresh.*[-1    1].*max(abs(1e-15.*OPM_data_mfc_mean(isz))))
 
-h=trisurf(DT,S.sensor_info.pos(isz,1),S.sensor_info.pos(isz,2),S.sensor_info.pos(isz,3),-(OPM_data_mfc_mean(isz)));
-h.FaceColor = 'interp';h.EdgeColor = 'none';h.FaceAlpha = 0.5;colormap parula
+ax_res.CameraViewAngleMode = 'manual';
+axis off
+axis equal
 view([200,30])
-field_lf = -(true_LF(isx).*xv + true_LF(isy).*yv + true_LF(isz).*zv);
-
-arrs_lf = quiver3(px',py',pz',...
-    field_lf(:,1),field_lf(:,2),field_lf(:,3),1,'b','LineWidth',lw);
-
-clim(5e3.*[-1    1])
-
+cbmeas = colorbar('location','southoutside');
+% cbmeas.Label.String ='Field (T)';cbmeas.Label.Position(1)=0;
+ax_res.Position = [0.5 0.4 0.5 0.6];
+ax_tru.Position = [0. 0.4 0.5 0.6];
+cbmeas.Position = [0.7 0.01 0.3 0.0600];
+cbtru.Position = [0.2 0.01 0.3 0.0600];
+cbtru.AxisLocation = 'in';
+cbmeas.AxisLocation = 'in';
 for f_ind = 1:N_folds
     fold_data = OPM_data_mfc(:,win(f_ind,:));
     triggers_f_fold = triggers_f(win(f_ind,:));
@@ -846,7 +918,7 @@ views = [117,34;...
 
 
 axpos = ax_tru.Position;
-offset=0.02;
+offset=-0.005;
 cross_pos = [ax_tru.XLim(1)-offset,ax_tru.YLim(2)+offset,ax_tru.ZLim(1)-offset];
 % plot3([cross_pos(1),cross_pos(1)],[cross_pos(2),cross_pos(2)-0.05],[cross_pos(3),cross_pos(3)],'g','LineWidth',2)
 % plot3([cross_pos(1),cross_pos(1)+0.05],[cross_pos(2),cross_pos(2)],[cross_pos(3),cross_pos(3)],'r','LineWidth',2)
@@ -862,33 +934,37 @@ quiver3([cross_pos(1)],[cross_pos(2)],[cross_pos(3)],...
     [cross_pos(1)-cross_pos(1)],[cross_pos(2)-cross_pos(2)],[cross_pos(3)-cross_pos(3)+0.05]...
     ,'b','LineWidth',2,'MaxHeadSize',0.7)
 
-txt_offset = 0.07;
-tr = text(cross_pos(1)+txt_offset,cross_pos(2),cross_pos(3),'R');
-tp = text(cross_pos(1),cross_pos(2)-txt_offset,cross_pos(3),'P');
-ts = text(cross_pos(1),cross_pos(2),cross_pos(3)+txt_offset,'S');
+txt_offset = 0.01;
+% tr = text(cross_pos(1)+txt_offset,cross_pos(2),cross_pos(3),'R');
+% tp = text(cross_pos(1),cross_pos(2)-txt_offset,cross_pos(3),'P');
+% ts = text(cross_pos(1),cross_pos(2),cross_pos(3)+txt_offset,'S');
 ax_tru.Position = axpos;
 ax_res.XLim = ax_tru.XLim;
 ax_res.YLim = ax_tru.YLim;
 ax_res.ZLim = ax_tru.ZLim;
+set(f_compare.Children,'FontSize',9)
 
 %
 % for vi = 1
 for vi = 1:length(views)
     set([ax_res, ax_tru],'View',views(vi,:))
-    if vi ==2;tp.Visible = 0;end
+    print(f_compare,sprintf('Field_comparison_view_%d.png',vi   ),'-dpng','-r600')
+    if vi ==2
+%         tp.Visible = 0
+    end
 
     if vi == 3
-        ts.Position(3) =     0.020;
-        ts.Position(1) =     -0.1425;
-        tr.Position(3) =     -0.0220;
-        tr.Position(1) =     -0.0725;
+%         ts.Position(3) =     0.020;
+%         ts.Position(1) =     -0.1425;
+%         tr.Position(3) =     -0.0220;
+%         tr.Position(1) =     -0.0725;
     end
-    input('next')
-    tp.Visible = 1;
-    ts.Position(3) =     -0.0220;
-    ts.Position(1) =     -0.1225;
-    tr.Position(3) =     -0.0920;
-    tr.Position(1) =     -0.0525;
+%     input('next')
+%     tp.Visible = 1;
+%     ts.Position(3) =     -0.0220;
+%     ts.Position(1) =     -0.1225;
+%     tr.Position(3) =     -0.0920;
+%     tr.Position(1) =     -0.0525;
 end
 
 % sgtitle('"Ground truth" leadfield (blue) and data fieldmap in Z channels (red; average)')
