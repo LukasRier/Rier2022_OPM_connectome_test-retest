@@ -1,4 +1,6 @@
-# Analysis pipeline for "Test-Retest Reliability of the Human Connectome: An OPM-MEG study" (In submission 2022)
+# Analysis pipeline for "Test-Retest Reliability of the Human Connectome: An OPM-MEG study" 2023 Imaging Neuroscience
+
+(https://doi.org/10.1162/imag_a_00020)
 
 Lukas Rier[1], Sebastian Michelmann[2], Harrison Ritz[2], Vishal Shah[3], Ryan M. Hill[1,4], James Osborne[3], Cody Doyle[3], Niall Holmes[1,4], Richard Bowtell[1], Matthew J. Brookes[1,4], Kenneth A. Norman[2], Uri Hasson[2], Jonathan D. Cohen[2] and Elena Boto[1,4]
  
